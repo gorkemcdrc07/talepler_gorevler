@@ -257,7 +257,7 @@ export default function Navbar({
         if (!qq) return list;
 
         return list.filter((x) => (x.label + " " + x.hint).toLowerCase().includes(qq));
-    }, [q, navigate]);
+    }, [q, navigate, openPanel]);
 
     const copyToClipboard = async (text, label = "Kopyalandı") => {
         try {
