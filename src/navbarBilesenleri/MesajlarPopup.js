@@ -19,6 +19,7 @@ import {
     InputLabel,
     Select,
     MenuItem,
+    Badge,
 } from "@mui/material";
 import {
     SendRounded,
@@ -105,6 +106,11 @@ export default function Mesajlar() {
         () => convos.find((c) => c.id === activeId) || null,
         [convos, activeId]
     );
+
+    // ✅ Mesaj ikonundaki toplam okunmamış
+    const totalUnread = useMemo(() => {
+        return convos.reduce((sum, c) => sum + (c.unread || 0), 0);
+    }, [convos]);
 
     const scrollBottom = () => {
         requestAnimationFrame(() =>
@@ -213,7 +219,7 @@ export default function Mesajlar() {
         }
     };
 
-    // ✅ Kullanıcıları yükle (avatar_url KALDIRILDI)
+    // ✅ Kullanıcıları yükle
     const loadUsers = async (meId, birimFilter = "Tümü") => {
         setLoadingUsers(true);
         try {
@@ -252,6 +258,7 @@ export default function Mesajlar() {
     };
 
     // ✅ Bu sohbette bana gelen okunmamışları okundu yap
+    // NOT: mesajlar tablosunda okundu(boolean) ve okunma_tarihi(timestamptz) olmalı.
     const markAsRead = async (sohbetId) => {
         if (!sohbetId || !userId) return;
 
@@ -265,7 +272,7 @@ export default function Mesajlar() {
         if (error) console.log("markAsRead error =>", error);
     };
 
-    // ✅ Inbox yükle (konuşmalar + unread sayıları)
+    // ✅ Inbox yükle
     const loadInbox = async () => {
         setLoading(true);
         setErr("");
@@ -319,7 +326,7 @@ export default function Mesajlar() {
             }
 
             // ✅ okunmamış sayıları (aktif kullanıcıya göre)
-            // Not: bu sorgu "okundu" alanı yoksa hata verir.
+            // Eğer okundu kolonu yoksa burada hata alırsın.
             const { data: unreadRows, error: unreadErr } = await supabase
                 .from("mesajlar")
                 .select("sohbet_id")
@@ -348,7 +355,7 @@ export default function Mesajlar() {
                     otherByChat.set(row.sohbet_id, row.kullanici_id);
             }
 
-            // karşı tarafların profilini çek (avatar_url KALDIRILDI)
+            // karşı tarafların profilini çek
             const otherIds = Array.from(
                 new Set(Array.from(otherByChat.values()).filter(Boolean))
             );
@@ -373,6 +380,7 @@ export default function Mesajlar() {
                 const title = other
                     ? `${other.ad || ""} ${other.soyad || ""}`.trim()
                     : `Sohbet ${id.slice(0, 6)}`;
+
                 const subtitle = other
                     ? `${String(other.birim || "").trim()}${other.unvan ? " • " + other.unvan : ""
                         }`.trim()
@@ -436,7 +444,7 @@ export default function Mesajlar() {
                 sohbet_id: activeId,
                 gonderen_id: userId,
                 icerik: text.trim(),
-                // okundu: false // tablo default false ise gerek yok
+                // okundu: false // DB default false ise gerek yok
             });
 
             if (error) throw error;
@@ -542,8 +550,28 @@ export default function Mesajlar() {
                                 placeItems: "center",
                             }}
                         >
-                            {tab === 0 ? <ChatBubbleOutlineRounded /> : <PeopleAltRounded />}
+                            {tab === 0 ? (
+                                <Badge
+                                    badgeContent={totalUnread}
+                                    color="error"
+                                    overlap="circular"
+                                    invisible={totalUnread === 0}
+                                    sx={{
+                                        "& .MuiBadge-badge": {
+                                            fontWeight: 900,
+                                            fontSize: 11,
+                                            minWidth: 18,
+                                            height: 18,
+                                        },
+                                    }}
+                                >
+                                    <ChatBubbleOutlineRounded />
+                                </Badge>
+                            ) : (
+                                <PeopleAltRounded />
+                            )}
                         </Box>
+
                         <Box>
                             <Typography sx={{ color: "#fff", fontWeight: 900 }}>
                                 {tab === 0 ? "Mesajlar" : "Kişiler"}
@@ -641,11 +669,7 @@ export default function Mesajlar() {
                                                         alignItems="center"
                                                     >
                                                         <Typography
-                                                            sx={{
-                                                                color: "#fff",
-                                                                fontWeight: 900,
-                                                                fontSize: 13,
-                                                            }}
+                                                            sx={{ color: "#fff", fontWeight: 900, fontSize: 13 }}
                                                             noWrap
                                                         >
                                                             {c.title}
@@ -666,10 +690,7 @@ export default function Mesajlar() {
                                                                 />
                                                             )}
                                                             <Typography
-                                                                sx={{
-                                                                    color: "rgba(255,255,255,0.35)",
-                                                                    fontSize: 11,
-                                                                }}
+                                                                sx={{ color: "rgba(255,255,255,0.35)", fontSize: 11 }}
                                                             >
                                                                 {fmtTime(c.last_at)}
                                                             </Typography>
@@ -859,8 +880,7 @@ export default function Mesajlar() {
                                                         sx={{ color: "rgba(255,255,255,0.45)", fontSize: 11 }}
                                                         noWrap
                                                     >
-                                                        {`${String(u.birim || "").trim()}${u.unvan ? ` • ${u.unvan}` : ""
-                                                            }`}
+                                                        {`${String(u.birim || "").trim()}${u.unvan ? ` • ${u.unvan}` : ""}`}
                                                     </Typography>
                                                 </Box>
 
@@ -897,7 +917,9 @@ export default function Mesajlar() {
                             {active?.title || "Sohbet"}
                         </Typography>
                         <Typography sx={{ color: "rgba(0,242,255,0.55)", fontSize: 12 }}>
-                            {activeId ? `Sohbet ID: ${activeId}` : "Soldan bir konuşma seç veya Kişiler'den başlat."}
+                            {activeId
+                                ? `Sohbet ID: ${activeId}`
+                                : "Soldan bir konuşma seç veya Kişiler'den başlat."}
                         </Typography>
                     </Box>
                 </Stack>
@@ -929,7 +951,10 @@ export default function Mesajlar() {
                                 return (
                                     <Box
                                         key={m.id}
-                                        sx={{ display: "flex", justifyContent: mine ? "flex-end" : "flex-start" }}
+                                        sx={{
+                                            display: "flex",
+                                            justifyContent: mine ? "flex-end" : "flex-start",
+                                        }}
                                     >
                                         <Box
                                             sx={{
@@ -943,7 +968,12 @@ export default function Mesajlar() {
                                             }}
                                         >
                                             <Typography
-                                                sx={{ color: "#fff", fontSize: 13, fontWeight: 650, whiteSpace: "pre-wrap" }}
+                                                sx={{
+                                                    color: "#fff",
+                                                    fontSize: 13,
+                                                    fontWeight: 650,
+                                                    whiteSpace: "pre-wrap",
+                                                }}
                                             >
                                                 {m.icerik}
                                             </Typography>
