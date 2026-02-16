@@ -1,5 +1,5 @@
 // src/bilesenler/Navbar.js
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
     Box,
     Typography,
@@ -18,7 +18,6 @@ import {
     InputAdornment,
     Collapse,
     Button,
-
     Snackbar,
     Alert,
 } from "@mui/material";
@@ -91,7 +90,7 @@ const pillChipSx = {
 
 function safeFirstChar(s) {
     const ch = (s || "").trim()[0];
-    return (ch ? ch.toUpperCase() : "K");
+    return ch ? ch.toUpperCase() : "K";
 }
 
 export default function Navbar({
@@ -141,8 +140,6 @@ export default function Navbar({
         let alive = true;
 
         (async () => {
-            // NOTE: senin şemanda role yok, rol var.
-            // Ayrıca ad/soyad/birim/unvan gibi alanlar var.
             const { data, error } = await supabase
                 .from("kullanicilar")
                 .select("ad,soyad,avatar_url,rol,birim,unvan,kullanici_adi,eposta,aktif")
@@ -153,7 +150,9 @@ export default function Navbar({
             if (!error) setLocalProfile(data || null);
         })();
 
-        return () => { alive = false; };
+        return () => {
+            alive = false;
+        };
     }, [user?.id, profile]);
 
     const displayName = useMemo(() => {
@@ -161,7 +160,7 @@ export default function Navbar({
         const s = localProfile?.soyad || "";
         const f = `${a} ${s}`.trim();
         return f || (user?.email ? user.email.split("@")[0] : "Kullanıcı");
-    }, [localProfile, user]);
+    }, [localProfile, user?.email]);
 
     const avatarSrc = localProfile?.avatar_url || "";
     const rol = localProfile?.rol || "";
@@ -171,10 +170,10 @@ export default function Navbar({
     const eposta = localProfile?.eposta || user?.email || "";
     const aktif = typeof localProfile?.aktif === "boolean" ? localProfile.aktif : true;
 
-    const logout = async () => {
+    const logout = useCallback(async () => {
         await supabase.auth.signOut();
         navigate("/");
-    };
+    }, [navigate]);
 
     // Realtime (opsiyonel)
     useEffect(() => {
@@ -189,7 +188,6 @@ export default function Navbar({
                 setUnreadNotifs((x) => x + 1);
             })
             .subscribe((status) => {
-                // status: "SUBSCRIBED" vb.
                 setLive(status === "SUBSCRIBED");
             });
 
@@ -199,27 +197,29 @@ export default function Navbar({
         };
     }, [user?.id]);
 
-    const openPanel = (type) => {
-        setPanelType(type);
-        setPanelOpen(true);
+    const openPanel = useCallback(
+        (type) => {
+            setPanelType(type);
+            setPanelOpen(true);
 
-        if (!resetBadgesOnOpen) return;
-        if (type === "chat") setUnreadChats(0);
-        if (type === "notifs") setUnreadNotifs(0);
-    };
+            if (!resetBadgesOnOpen) return;
+            if (type === "chat") setUnreadChats(0);
+            if (type === "notifs") setUnreadNotifs(0);
+        },
+        [resetBadgesOnOpen]
+    );
 
-    const closePanel = () => setPanelOpen(false);
+    const closePanel = useCallback(() => setPanelOpen(false), []);
 
-    const openQuick = () => {
+    const openQuick = useCallback(() => {
         setQuickOpen(true);
-        // küçük gecikme ile focus
         setTimeout(() => quickInputRef.current?.focus?.(), 60);
-    };
+    }, []);
 
-    const closeQuick = () => {
+    const closeQuick = useCallback(() => {
         setQuickOpen(false);
         setQ("");
-    };
+    }, []);
 
     // Ctrl/⌘ + K ile quick search
     useEffect(() => {
@@ -240,9 +240,10 @@ export default function Navbar({
                 if (anchorUser) setAnchorUser(null);
             }
         };
+
         window.addEventListener("keydown", onKeyDown);
         return () => window.removeEventListener("keydown", onKeyDown);
-    }, [quickOpen, anchorUser]);
+    }, [quickOpen, anchorUser, closeQuick]);
 
     const quickActions = useMemo(() => {
         const list = [
@@ -259,14 +260,14 @@ export default function Navbar({
         return list.filter((x) => (x.label + " " + x.hint).toLowerCase().includes(qq));
     }, [q, navigate, openPanel]);
 
-    const copyToClipboard = async (text, label = "Kopyalandı") => {
+    const copyToClipboard = useCallback(async (text, label = "Kopyalandı") => {
         try {
             await navigator.clipboard.writeText(text);
             setToast({ open: true, msg: label, severity: "success" });
         } catch {
             setToast({ open: true, msg: "Kopyalama başarısız", severity: "error" });
         }
-    };
+    }, []);
 
     return (
         <>
