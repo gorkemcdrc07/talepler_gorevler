@@ -45,7 +45,7 @@ function getSession() {
 }
 
 function normRole(v) {
-    return String(v || "").trim().toLocaleLowerCase("tr-TR").replaceAll("Ã„Â±", "i");
+    return String(v || "").trim().toLocaleLowerCase("tr-TR");
 }
 
 async function fetchJson(url, options = {}) {
@@ -64,12 +64,11 @@ async function fetchJson(url, options = {}) {
         data = await res.json().catch(() => null);
     } else {
         const text = await res.text().catch(() => "");
-        data = { message: text?.slice(0, 300) || "JSON olmayan cevap dÃƒÂ¶ndÃƒÂ¼." };
+        data = { message: text?.slice(0, 300) || "JSON olmayan cevap döndü." };
     }
 
     if (!res.ok) {
-        const msg =
-            data?.message || `HTTP ${res.status} ${res.statusText || ""}`.trim();
+        const msg = data?.message || `HTTP ${res.status} ${res.statusText || ""}`.trim();
         const err = new Error(msg);
         err.status = res.status;
         err.data = data;
@@ -86,9 +85,10 @@ export default function YeniTalep() {
     const role = useMemo(() => normRole(user?.rol), [user?.rol]);
     const isAdmin = role === "admin" || role === "process";
 
-    // Ã¢Å“â€¦ Proxy ile ÃƒÂ§alÃ„Â±Ã…Å¸acaÃ„Å¸Ã„Â±mÃ„Â±z iÃƒÂ§in BASE URL yok:
-    // Root package.json iÃƒÂ§ine:  "proxy": "http://localhost:4000"
+    // Proxy ile çalışıyorsan root package.json içine şunu ekleyebilirsin:
+    // "proxy": "http://localhost:4000"
     const API = "http://localhost:4000";
+
     const [loading, setLoading] = useState(false);
     const [toast, setToast] = useState({ open: false, type: "info", text: "" });
     const openToast = (type, text) => setToast({ open: true, type, text });
@@ -98,17 +98,17 @@ export default function YeniTalep() {
         () => [
             "FTS",
             "ETS",
-            "GELÃ„Â°R GÃ„Â°DER",
-            "SÃ„Â°PARÃ„Â°Ã…Â OTOMASYON",
-            "TEDARÃ„Â°K ANALÃ„Â°Z",
-            "TALEP Ãƒâ€¡Ãƒâ€“ZÃƒÅ“M",
-            "YENÃ„Â° SÃ„Â°STEM",
-            "DÃ„Â°Ã„ÂER",
+            "GELİR GİDER",
+            "SİPARİŞ OTOMASYON",
+            "TEDARİK ANALİZ",
+            "TALEP ÇÖZÜM",
+            "YENİ SİSTEM",
+            "DİĞER",
         ],
         []
     );
 
-    const priorities = ["DÃƒÂ¼Ã…Å¸ÃƒÂ¼k", "Normal", "YÃƒÂ¼ksek", "Acil"];
+    const priorities = ["Düşük", "Normal", "Yüksek", "Acil"];
 
     const [form, setForm] = useState({
         baslik: "",
@@ -130,10 +130,11 @@ export default function YeniTalep() {
     const [loadingBirimler, setLoadingBirimler] = useState(false);
     const [loadingUsers, setLoadingUsers] = useState(false);
 
-    // Ã¢Å“â€¦ baÃ…Å¸arÃ„Â± gÃƒÂ¶rseli / animasyon
+    // Başarı görseli / animasyon
     const [successOpen, setSuccessOpen] = useState(false);
     const [createdNo, setCreatedNo] = useState("");
-    // Ã¢Å“â€¦ Birimler yÃƒÂ¼kle
+
+    // Birimler yükle
     useEffect(() => {
         let alive = true;
 
@@ -144,13 +145,12 @@ export default function YeniTalep() {
                 if (!alive) return;
 
                 const list = Array.isArray(json?.birimler) ? json.birimler : [];
-                if (!list.length) openToast("warning", "Birim listesi boÃ…Å¸ geldi.");
+                if (!list.length) openToast("warning", "Birim listesi boş geldi.");
                 setBirimler(list);
             } catch (e) {
                 openToast(
                     "error",
-                    `Birimler alÃ„Â±namadÃ„Â±. ${e?.status ? `(HTTP ${e.status}) ` : ""}${e?.message || ""
-                        }`.trim()
+                    `Birimler alınamadı. ${e?.status ? `(HTTP ${e.status}) ` : ""}${e?.message || ""}`.trim()
                 );
                 if (alive) setBirimler([]);
             } finally {
@@ -164,7 +164,7 @@ export default function YeniTalep() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    // Ã¢Å“â€¦ Birim seÃƒÂ§ilince kullanÃ„Â±cÃ„Â±larÃ„Â± yÃƒÂ¼kle
+    // Birim seçilince kullanıcıları yükle
     useEffect(() => {
         let alive = true;
 
@@ -182,18 +182,13 @@ export default function YeniTalep() {
         (async () => {
             setLoadingUsers(true);
             try {
-                const json = await fetchJson(
-                    `${API}/api/kullanicilar?birim=${encodeURIComponent(form.birim)}`
-                );
+                const json = await fetchJson(`${API}/api/kullanicilar?birim=${encodeURIComponent(form.birim)}`);
                 if (!alive) return;
 
                 const list = Array.isArray(json?.users) ? json.users : [];
                 setBirimUsers(list);
 
-                if (
-                    form.talep_edilen_id &&
-                    !list.some((u) => String(u.id) === String(form.talep_edilen_id))
-                ) {
+                if (form.talep_edilen_id && !list.some((u) => String(u.id) === String(form.talep_edilen_id))) {
                     setForm((p) => ({
                         ...p,
                         talep_edilen_id: "",
@@ -204,8 +199,7 @@ export default function YeniTalep() {
             } catch (e) {
                 openToast(
                     "error",
-                    `KullanÃ„Â±cÃ„Â±lar alÃ„Â±namadÃ„Â±. ${e?.status ? `(HTTP ${e.status}) ` : ""}${e?.message || ""
-                        }`.trim()
+                    `Kullanıcılar alınamadı. ${e?.status ? `(HTTP ${e.status}) ` : ""}${e?.message || ""}`.trim()
                 );
                 if (!alive) return;
                 setBirimUsers([]);
@@ -217,9 +211,9 @@ export default function YeniTalep() {
         return () => {
             alive = false;
         };
-    }, [form.birim, form.talep_edilen_id]); // Ã¢Å“â€¦ API sabit, dependency'den ÃƒÂ§Ã„Â±kardÃ„Â±m
+    }, [form.birim, form.talep_edilen_id]);
 
-    const showSistemSelect = form.talep_edilen === "GÃƒâ€“RKEM Ãƒâ€¡ADIRCI";
+    const showSistemSelect = form.talep_edilen === "GÖRKEM ÇADIRCI";
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -244,7 +238,7 @@ export default function YeniTalep() {
                     talep_edilen_id: value,
                     talep_edilen: adSoyad,
                 };
-                if (adSoyad !== "GÃƒâ€“RKEM Ãƒâ€¡ADIRCI") next.talep_edilecek_sistem = "";
+                if (adSoyad !== "GÖRKEM ÇADIRCI") next.talep_edilecek_sistem = "";
                 return next;
             });
             return;
@@ -263,7 +257,7 @@ export default function YeniTalep() {
         for (const f of merged) {
             const sizeMB = f.size / (1024 * 1024);
             if (sizeMB > maxSizeMB) {
-                openToast("error", `Dosya ÃƒÂ§ok bÃƒÂ¼yÃƒÂ¼k: ${f.name} (max ${maxSizeMB}MB)`);
+                openToast("error", `Dosya çok büyük: ${f.name} (max ${maxSizeMB}MB)`);
                 return;
             }
         }
@@ -273,36 +267,27 @@ export default function YeniTalep() {
     const removeFile = (idx) => setFiles((prev) => prev.filter((_, i) => i !== idx));
 
     const validate = () => {
-        if (!user?.id) return "Oturum bulunamadÃ„Â±. LÃƒÂ¼tfen tekrar giriÃ…Å¸ yap.";
+        if (!user?.id) return "Oturum bulunamadı. Lütfen tekrar giriş yap.";
 
-        if (!form.birim) return "Birim seÃƒÂ§ilmeli.";
-        if (!form.talep_edilen_id || !form.talep_edilen)
-            return "Talep edilen kiÃ…Å¸i seÃƒÂ§ilmeli.";
+        if (!form.birim) return "Birim seçilmeli.";
+        if (!form.talep_edilen_id || !form.talep_edilen) return "Talep edilen kişi seçilmeli.";
 
         if (showSistemSelect) {
-            if (!form.talep_edilecek_sistem) return "Talep edilecek sistem seÃƒÂ§ilmeli.";
-            if (!sistemlerGorkem.includes(form.talep_edilecek_sistem))
-                return "GeÃƒÂ§ersiz sistem seÃƒÂ§imi.";
+            if (!form.talep_edilecek_sistem) return "Talep edilecek sistem seçilmeli.";
+            if (!sistemlerGorkem.includes(form.talep_edilecek_sistem)) return "Geçersiz sistem seçimi.";
         }
 
-        if (!form.istenilen_tarih) return "Ã„Â°stenilen tarih seÃƒÂ§ilmeli.";
+        if (!form.istenilen_tarih) return "İstenilen tarih seçilmeli.";
 
         const today = new Date();
-        const todayStr = new Date(
-            today.getFullYear(),
-            today.getMonth(),
-            today.getDate()
-        )
-            .toISOString()
-            .slice(0, 10);
-        if (form.istenilen_tarih < todayStr) return "Ã„Â°stenilen tarih geÃƒÂ§miÃ…Å¸ olamaz.";
+        const todayStr = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString().slice(0, 10);
+        if (form.istenilen_tarih < todayStr) return "İstenilen tarih geçmiş olamaz.";
 
-        if (!form.baslik.trim()) return "BaÃ…Å¸lÃ„Â±k zorunlu.";
-        if (form.baslik.trim().length < 4) return "BaÃ…Å¸lÃ„Â±k en az 4 karakter olmalÃ„Â±.";
+        if (!form.baslik.trim()) return "Başlık zorunlu.";
+        if (form.baslik.trim().length < 4) return "Başlık en az 4 karakter olmalı.";
 
-        if (!form.aciklama.trim()) return "AÃƒÂ§Ã„Â±klama zorunlu.";
-        if (form.aciklama.trim().length < 10)
-            return "AÃƒÂ§Ã„Â±klama en az 10 karakter olmalÃ„Â±.";
+        if (!form.aciklama.trim()) return "Açıklama zorunlu.";
+        if (form.aciklama.trim().length < 10) return "Açıklama en az 10 karakter olmalı.";
 
         if (files.length > maxFiles) return `En fazla ${maxFiles} dosya ekleyebilirsin.`;
 
@@ -328,14 +313,13 @@ export default function YeniTalep() {
             fd.append("olusturan_id", String(user.id));
             files.forEach((f) => fd.append("files", f));
 
-            // Ã¢Å“â€¦ proxy sayesinde direkt /api/... ÃƒÂ§aÃ„Å¸Ã„Â±rÃ„Â±yoruz
             const res = await fetch(`${API}/api/talepler/create`, {
                 method: "POST",
                 body: fd,
             });
 
             const json = await res.json().catch(() => ({}));
-            if (!res.ok) throw new Error(json?.message || "Talep oluÃ…Å¸turulamadÃ„Â±.");
+            if (!res.ok) throw new Error(json?.message || "Talep oluşturulamadı.");
 
             setCreatedNo(json?.talep_no || "");
             setSuccessOpen(true);
@@ -349,7 +333,7 @@ export default function YeniTalep() {
                 else navigate("/taleplerim", { replace: true });
             }, 1400);
         } catch (e) {
-            openToast("error", e?.message || "Talep oluÃ…Å¸turulamadÃ„Â±.");
+            openToast("error", e?.message || "Talep oluşturulamadı.");
         } finally {
             setLoading(false);
         }
@@ -362,12 +346,12 @@ export default function YeniTalep() {
                     <Stack direction="row" alignItems="center" spacing={1.2}>
                         <ClipboardPlus size={26} color="#00f2fe" />
                         <Typography variant="h5" sx={{ fontWeight: 950 }}>
-                            Yeni Talep OluÃ…Å¸tur
+                            Yeni Talep Oluştur
                         </Typography>
                     </Stack>
 
                     <Typography sx={{ color: "rgba(255,255,255,0.55)" }}>
-                        Talebini detaylÃ„Â± yazarsan ÃƒÂ§ÃƒÂ¶zÃƒÂ¼m sÃƒÂ¼reci daha hÃ„Â±zlÃ„Â± ilerler.
+                        Talebini detaylı yazarsan çözüm süreci daha hızlı ilerler.
                     </Typography>
 
                     <Box
@@ -400,11 +384,11 @@ export default function YeniTalep() {
                                     sx={selectSx}
                                 >
                                     {loadingBirimler ? (
-                                        <MenuItem value="">Birimler yÃƒÂ¼kleniyor...</MenuItem>
+                                        <MenuItem value="">Birimler yükleniyor...</MenuItem>
                                     ) : (
                                         [
                                             <MenuItem key="sec" value="">
-                                                SeÃƒÂ§iniz
+                                                Seçiniz
                                             </MenuItem>,
                                             ...birimler.map((b) => (
                                                 <MenuItem key={b} value={b}>
@@ -422,7 +406,7 @@ export default function YeniTalep() {
                                     name="talep_edilen_id"
                                     value={form.talep_edilen_id}
                                     onChange={handleChange}
-                                    label="Talep Edilen KiÃ…Å¸i"
+                                    label="Talep Edilen Kişi"
                                     disabled={!form.birim || loadingUsers}
                                     InputProps={{
                                         startAdornment: (
@@ -434,13 +418,13 @@ export default function YeniTalep() {
                                     sx={selectSx}
                                 >
                                     {!form.birim ? (
-                                        <MenuItem value="">Ãƒâ€“nce birim seÃƒÂ§</MenuItem>
+                                        <MenuItem value="">Önce birim seç</MenuItem>
                                     ) : loadingUsers ? (
-                                        <MenuItem value="">KullanÃ„Â±cÃ„Â±lar yÃƒÂ¼kleniyor...</MenuItem>
+                                        <MenuItem value="">Kullanıcılar yükleniyor...</MenuItem>
                                     ) : (
                                         [
                                             <MenuItem key="usec" value="">
-                                                SeÃƒÂ§iniz
+                                                Seçiniz
                                             </MenuItem>,
                                             ...birimUsers.map((u) => (
                                                 <MenuItem key={u.id} value={u.id}>
@@ -458,7 +442,7 @@ export default function YeniTalep() {
                                     name="oncelik"
                                     value={form.oncelik}
                                     onChange={handleChange}
-                                    label="Ãƒâ€“ncelik"
+                                    label="Öncelik"
                                     InputProps={{
                                         startAdornment: (
                                             <InputAdornment position="start" sx={{ color: "#00f2fe" }}>
@@ -478,10 +462,10 @@ export default function YeniTalep() {
 
                             <ModernInput
                                 name="baslik"
-                                label="BaÃ…Å¸lÃ„Â±k"
+                                label="Başlık"
                                 value={form.baslik}
                                 onChange={handleChange}
-                                placeholder="Ãƒâ€“rn: YazÃ„Â±cÃ„Â± baÃ„Å¸lantÃ„Â± sorunu"
+                                placeholder="Örn: Yazıcı bağlantı sorunu"
                                 icon={<ClipboardPlus size={16} />}
                             />
 
@@ -491,7 +475,7 @@ export default function YeniTalep() {
                                 name="istenilen_tarih"
                                 value={form.istenilen_tarih}
                                 onChange={handleChange}
-                                label="Ã„Â°stenilen Tarih"
+                                label="İstenilen Tarih"
                                 type="date"
                                 InputLabelProps={{ shrink: true }}
                                 InputProps={{
@@ -537,14 +521,11 @@ export default function YeniTalep() {
                                 name="aciklama"
                                 value={form.aciklama}
                                 onChange={handleChange}
-                                label="AÃƒÂ§Ã„Â±klama"
-                                placeholder="Sorunu detaylÃ„Â± anlat: ne oldu, ne zaman oldu, hata mesajÃ„Â± var mÃ„Â±, hangi cihaz/uygulama?"
+                                label="Açıklama"
+                                placeholder="Sorunu detaylı anlat: ne oldu, ne zaman oldu, hata mesajı var mı, hangi cihaz/uygulama?"
                                 InputProps={{
                                     startAdornment: (
-                                        <InputAdornment
-                                            position="start"
-                                            sx={{ color: "#00f2fe", alignSelf: "flex-start", mt: 1.2 }}
-                                        >
+                                        <InputAdornment position="start" sx={{ color: "#00f2fe", alignSelf: "flex-start", mt: 1.2 }}>
                                             <AlignLeft size={16} />
                                         </InputAdornment>
                                     ),
@@ -569,7 +550,7 @@ export default function YeniTalep() {
                                                 Dosya Ekle (opsiyonel)
                                             </Typography>
                                             <Typography sx={{ fontSize: 12, color: "rgba(255,255,255,0.50)" }}>
-                                                En fazla {maxFiles} dosya Ã¢â‚¬Â¢ Maks {maxSizeMB}MB / dosya
+                                                En fazla {maxFiles} dosya • Maks {maxSizeMB}MB / dosya
                                             </Typography>
                                         </Box>
                                     </Stack>
@@ -583,11 +564,14 @@ export default function YeniTalep() {
                                             borderColor: "rgba(0,242,254,0.40)",
                                             color: "#e2e8f0",
                                             fontWeight: 900,
-                                            "&:hover": { borderColor: "rgba(0,242,254,0.75)", bgcolor: "rgba(255,255,255,0.03)" },
+                                            "&:hover": {
+                                                borderColor: "rgba(0,242,254,0.75)",
+                                                bgcolor: "rgba(255,255,255,0.03)",
+                                            },
                                         }}
                                         disabled={loading || files.length >= maxFiles}
                                     >
-                                        Dosya SeÃƒÂ§
+                                        Dosya Seç
                                         <input hidden type="file" multiple onChange={onPickFiles} />
                                     </Button>
                                 </Stack>
@@ -597,7 +581,7 @@ export default function YeniTalep() {
                                         {files.map((f, idx) => (
                                             <Chip
                                                 key={`${f.name}-${idx}`}
-                                                label={`${f.name} Ã¢â‚¬Â¢ ${Math.round(f.size / 1024)} KB`}
+                                                label={`${f.name} • ${Math.round(f.size / 1024)} KB`}
                                                 onDelete={() => removeFile(idx)}
                                                 deleteIcon={<X size={14} />}
                                                 sx={{
@@ -621,13 +605,13 @@ export default function YeniTalep() {
                             <Stack direction={{ xs: "column", sm: "row" }} spacing={1.5} alignItems="center">
                                 <Box sx={{ flex: 1 }}>
                                     <Typography sx={{ fontSize: 12, color: "rgba(255,255,255,0.45)" }}>
-                                        OluÃ…Å¸turan:{" "}
+                                        Oluşturan:{" "}
                                         <b style={{ color: "rgba(255,255,255,0.85)" }}>
                                             {user?.ad} {user?.soyad}
                                         </b>
                                     </Typography>
                                     <Typography sx={{ fontSize: 12, color: "rgba(255,255,255,0.35)" }}>
-                                        {user?.birim} Ã¢â‚¬Â¢ {user?.unvan}
+                                        {user?.birim} • {user?.unvan}
                                     </Typography>
                                 </Box>
 
@@ -659,7 +643,7 @@ export default function YeniTalep() {
                                         boxShadow: "0 0 0 1px rgba(0,242,254,0.20), 0 14px 40px rgba(0,242,254,0.12)",
                                     }}
                                 >
-                                    Talebi GÃƒÂ¶nder
+                                    Talebi Gönder
                                 </Button>
                             </Stack>
                         </Stack>
@@ -667,7 +651,7 @@ export default function YeniTalep() {
                 </Stack>
             </motion.div>
 
-            {/* Ã¢Å“â€¦ Dinamik baÃ…Å¸arÃ„Â± gÃƒÂ¶rseli */}
+            {/* Dinamik başarı görseli */}
             <Dialog
                 open={successOpen}
                 onClose={() => setSuccessOpen(false)}
@@ -704,7 +688,7 @@ export default function YeniTalep() {
                         </motion.div>
 
                         <Typography sx={{ color: "#fff", fontWeight: 950, fontSize: 18, letterSpacing: "-0.4px" }}>
-                            Talep baÃ…Å¸arÃ„Â±yla oluÃ…Å¸turuldu!
+                            Talep başarıyla oluşturuldu!
                         </Typography>
 
                         {createdNo ? (
@@ -722,23 +706,16 @@ export default function YeniTalep() {
                             />
                         ) : (
                             <Typography sx={{ color: "rgba(255,255,255,0.55)", fontSize: 13 }}>
-                                Talep numarasÃ„Â± backendÃ¢â‚¬â„¢den dÃƒÂ¶ndÃƒÂ¼rÃƒÂ¼lmedi (API cevabÃ„Â±na talep_no ekle).
+                                Talep numarası backend’den döndürülmedi (API cevabına talep_no ekle).
                             </Typography>
                         )}
 
-                        <Typography sx={{ color: "rgba(255,255,255,0.55)", fontSize: 13 }}>
-                            YÃƒÂ¶nlendiriliyorsunÃ¢â‚¬Â¦
-                        </Typography>
+                        <Typography sx={{ color: "rgba(255,255,255,0.55)", fontSize: 13 }}>Yönlendiriliyorsun…</Typography>
                     </Stack>
                 </DialogContent>
             </Dialog>
 
-            <Snackbar
-                open={toast.open}
-                autoHideDuration={3200}
-                onClose={closeToast}
-                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-            >
+            <Snackbar open={toast.open} autoHideDuration={3200} onClose={closeToast} anchorOrigin={{ vertical: "bottom", horizontal: "center" }}>
                 <Alert onClose={closeToast} severity={toast.type} variant="filled" sx={{ width: "100%" }}>
                     {toast.text}
                 </Alert>

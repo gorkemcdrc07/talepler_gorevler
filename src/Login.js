@@ -13,25 +13,13 @@ import {
     IconButton,
 } from "@mui/material";
 import { motion } from "framer-motion";
-import {
-    Mail,
-    Lock,
-    Cpu,
-    Loader2,
-    Eye,
-    EyeOff,
-    ArrowRight,
-    ShieldCheck,
-} from "lucide-react";
+import { Mail, Lock, Cpu, Loader2, Eye, EyeOff, ArrowRight, ShieldCheck } from "lucide-react";
 import { supabase } from "./lib/supabase";
 
 const EMAIL_DOMAIN = "@odaklojistik.com.tr";
 
 function normRole(v) {
-    return String(v || "")
-        .trim()
-        .toLocaleLowerCase("tr-TR")
-        .replaceAll("Ä±", "i");
+    return String(v || "").trim().toLocaleLowerCase("tr-TR");
 }
 
 function getSession() {
@@ -57,7 +45,7 @@ export default function CleanTechAuth() {
         sifre: "",
     });
 
-    // âœ… Oturum varsa direkt yÃ¶nlendir
+    // ✅ Oturum varsa direkt yönlendir
     useEffect(() => {
         const s = getSession();
         if (s?.id) {
@@ -83,9 +71,8 @@ export default function CleanTechAuth() {
     const validate = () => {
         const email = emailNormalized;
         if (!email) return "E-posta zorunlu.";
-        if (!email.endsWith(EMAIL_DOMAIN))
-            return `Sadece ${EMAIL_DOMAIN} uzantÄ±lÄ± mail kabul ediliyor.`;
-        if (!form.sifre || form.sifre.length < 4) return "Åifre zorunlu.";
+        if (!email.endsWith(EMAIL_DOMAIN)) return `Sadece ${EMAIL_DOMAIN} uzantılı mail kabul ediliyor.`;
+        if (!form.sifre || form.sifre.length < 4) return "Şifre zorunlu.";
         return null;
     };
 
@@ -105,24 +92,21 @@ export default function CleanTechAuth() {
                 .eq("aktif", true)
                 .single();
 
-            if (error || !data) throw new Error("E-posta veya ÅŸifre hatalÄ±.");
+            if (error || !data) throw new Error("E-posta veya şifre hatalı.");
 
-            await supabase
-                .from("kullanicilar")
-                .update({ son_giris: new Date().toISOString() })
-                .eq("id", data.id);
+            await supabase.from("kullanicilar").update({ son_giris: new Date().toISOString() }).eq("id", data.id);
 
             localStorage.setItem("oturum", JSON.stringify(data));
 
             const r = normRole(data.rol);
-            openToast("success", `HoÅŸ geldin ${data.ad} ğŸ‘‹`);
+            openToast("success", `Hoş geldin ${data.ad} 👋`);
 
             setTimeout(() => {
                 if (r === "admin" || r === "process") navigate("/admin");
                 else navigate("/anasayfa");
             }, 250);
         } catch (e) {
-            openToast("error", e?.message || "GiriÅŸ yapÄ±lamadÄ±.");
+            openToast("error", e?.message || "Giriş yapılamadı.");
         } finally {
             setLoading(false);
         }
@@ -168,8 +152,7 @@ export default function CleanTechAuth() {
                 sx={{
                     position: "absolute",
                     inset: 0,
-                    background:
-                        "radial-gradient(circle at 50% 20%, transparent 0%, rgba(0,0,0,0.55) 70%)",
+                    background: "radial-gradient(circle at 50% 20%, transparent 0%, rgba(0,0,0,0.55) 70%)",
                     pointerEvents: "none",
                 }}
             />
@@ -201,8 +184,7 @@ export default function CleanTechAuth() {
                             right: 0,
                             top: 0,
                             height: 2,
-                            background:
-                                "linear-gradient(90deg, transparent, rgba(0,242,254,0.95), transparent)",
+                            background: "linear-gradient(90deg, transparent, rgba(0,242,254,0.95), transparent)",
                             opacity: 0.9,
                         }}
                     />
@@ -238,7 +220,7 @@ export default function CleanTechAuth() {
                         </Stack>
 
                         <Typography sx={{ color: "rgba(255,255,255,0.55)", fontSize: 12 }}>
-                            Dahili Talep ve Ã‡Ã¶zÃ¼m YÃ¶netimi
+                            Dahili Talep ve Çözüm Yönetimi
                         </Typography>
 
                         <Divider
@@ -252,9 +234,7 @@ export default function CleanTechAuth() {
 
                         <Stack direction="row" spacing={1} alignItems="center" sx={{ color: "rgba(255,255,255,0.55)" }}>
                             <ShieldCheck size={16} />
-                            <Typography sx={{ fontSize: 12, fontWeight: 700 }}>
-                                Kurumsal GiriÅŸ
-                            </Typography>
+                            <Typography sx={{ fontSize: 12, fontWeight: 700 }}>Kurumsal Giriş</Typography>
                         </Stack>
                     </Stack>
 
@@ -281,7 +261,7 @@ export default function CleanTechAuth() {
 
                         <CompactInput
                             name="sifre"
-                            label="GÃ¼venlik Åifresi"
+                            label="Güvenlik Şifresi"
                             value={form.sifre}
                             type={showPass ? "text" : "password"}
                             icon={<Lock size={16} />}
@@ -335,7 +315,7 @@ export default function CleanTechAuth() {
                                 transition: "all .18s ease",
                             }}
                         >
-                            Sisteme GiriÅŸ Yap
+                            Sisteme Giriş Yap
                         </Button>
 
                         <Typography
@@ -347,18 +327,13 @@ export default function CleanTechAuth() {
                                 lineHeight: 1.6,
                             }}
                         >
-                            Hesap oluÅŸturma kapalÄ±dÄ±r. EriÅŸim iÃ§in IT / Sistem yÃ¶neticinizle iletiÅŸime geÃ§in.
+                            Hesap oluşturma kapalıdır. Erişim için IT / Sistem yöneticinizle iletişime geçin.
                         </Typography>
                     </Stack>
                 </Box>
             </motion.div>
 
-            <Snackbar
-                open={toast.open}
-                autoHideDuration={3200}
-                onClose={closeToast}
-                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-            >
+            <Snackbar open={toast.open} autoHideDuration={3200} onClose={closeToast} anchorOrigin={{ vertical: "bottom", horizontal: "center" }}>
                 <Alert onClose={closeToast} severity={toast.type} variant="filled" sx={{ width: "100%" }}>
                     {toast.text}
                 </Alert>
@@ -416,4 +391,3 @@ function CompactInput({ icon, endAdornment, helperText, ...props }) {
         </Stack>
     );
 }
-
