@@ -89,6 +89,7 @@ export default function YeniTalep() {
     const API = useMemo(() => process.env.REACT_APP_API_URL || "http://localhost:4000", []);
     const [loading, setLoading] = useState(false);
     const [toast, setToast] = useState({ open: false, type: "info", text: "" });
+
     const openToast = useCallback((type, text) => {
         setToast({ open: true, type, text });
     }, []);
@@ -96,6 +97,7 @@ export default function YeniTalep() {
     const closeToast = useCallback(() => {
         setToast((t) => ({ ...t, open: false }));
     }, []);
+
     const sistemlerGorkem = useMemo(
         () => [
             "FTS",
@@ -145,6 +147,7 @@ export default function YeniTalep() {
             try {
                 const json = await fetchJson(`${API}/api/birimler`);
                 if (!alive) return;
+
                 const list = Array.isArray(json?.birimler) ? json.birimler : [];
                 if (!list.length) openToast("warning", "Birim listesi boş geldi.");
                 setBirimler(list);
@@ -162,7 +165,9 @@ export default function YeniTalep() {
         return () => {
             alive = false;
         };
-    }, [API, openToast]);    // Birim seçilince kullanıcıları yükle
+    }, [API, openToast]);
+
+    // Birim seçilince kullanıcıları yükle
     useEffect(() => {
         let alive = true;
 
@@ -174,7 +179,9 @@ export default function YeniTalep() {
                 talep_edilen: "",
                 talep_edilecek_sistem: "",
             }));
-            return;
+            return () => {
+                alive = false;
+            };
         }
 
         (async () => {
@@ -209,7 +216,7 @@ export default function YeniTalep() {
         return () => {
             alive = false;
         };
-    }, [API, form.birim, form.talep_edilen_id]);
+    }, [API, form.birim, form.talep_edilen_id, openToast]);
 
     const showSistemSelect = form.talep_edilen === "GÖRKEM ÇADIRCI";
 
@@ -523,7 +530,10 @@ export default function YeniTalep() {
                                 placeholder="Sorunu detaylı anlat: ne oldu, ne zaman oldu, hata mesajı var mı, hangi cihaz/uygulama?"
                                 InputProps={{
                                     startAdornment: (
-                                        <InputAdornment position="start" sx={{ color: "#00f2fe", alignSelf: "flex-start", mt: 1.2 }}>
+                                        <InputAdornment
+                                            position="start"
+                                            sx={{ color: "#00f2fe", alignSelf: "flex-start", mt: 1.2 }}
+                                        >
                                             <AlignLeft size={16} />
                                         </InputAdornment>
                                     ),
@@ -713,7 +723,12 @@ export default function YeniTalep() {
                 </DialogContent>
             </Dialog>
 
-            <Snackbar open={toast.open} autoHideDuration={3200} onClose={closeToast} anchorOrigin={{ vertical: "bottom", horizontal: "center" }}>
+            <Snackbar
+                open={toast.open}
+                autoHideDuration={3200}
+                onClose={closeToast}
+                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+            >
                 <Alert onClose={closeToast} severity={toast.type} variant="filled" sx={{ width: "100%" }}>
                     {toast.text}
                 </Alert>
