@@ -6,18 +6,9 @@ import { createClient } from "@supabase/supabase-js";
 
 /* ======================================================
    ENV
-   - Local'de .env kullanırsın (server/.env veya kök .env)
-   - Render'da Environment Variables panelinden verirsin
 ====================================================== */
 
-// ✅ Render için doğru kullanım: (path zorlamadan)
 dotenv.config();
-
-// Not: Eğer local'de server/.env kullanıyorsan, iki seçenek:
-// 1) server klasöründe çalıştırınca otomatik yüklenir (dotenv.config())
-// 2) İstersen aşağıdaki satırı açıp server/.env'yi localde zorlayabilirsin:
-//
-// dotenv.config({ path: new URL("./.env", import.meta.url).pathname });
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -30,34 +21,35 @@ if (!SUPABASE_SERVICE_ROLE_KEY) throw new Error("SUPABASE_SERVICE_ROLE_KEY eksik
 const app = express();
 
 /* ================= CORS =================
-   ✅ Render'da: FRONTEND URL (Vercel) env’den gelsin
-   - Frontend: https://talepler-gorevler.vercel.app
-   - Backend: Render env -> FRONTEND_URL = https://talepler-gorevler.vercel.app
+   Render env:
+   FRONTEND_URL = https://talepler-gorevler.vercel.app
 ====================================================== */
 
-const FRONTEND_URL = (process.env.FRONTEND_URL || "").trim(); // ör: https://xxx.vercel.app
+const FRONTEND_URL = (process.env.FRONTEND_URL || "").trim();
+const BUCKET = process.env.BUCKET || "talepler-ekler";
+const PORT = process.env.PORT || 4000;
 
 const allowedOrigins = new Set(
     [
         "http://localhost:3000",
         "http://localhost:5173",
-        FRONTEND_URL, // boş değilse eklenir
+        FRONTEND_URL,
     ].filter(Boolean)
 );
 
 app.use(
     cors({
         origin: (origin, cb) => {
-            // Postman/curl gibi tools origin göndermez -> izin ver
+            // Postman/curl gibi origin olmayan istekler
             if (!origin) return cb(null, true);
 
-            // allow list
+            // Net allow list
             if (allowedOrigins.has(origin)) return cb(null, true);
 
-            // Vercel preview subdomainlerini de kabul et (isteğe bağlı ama pratik)
+            // Vercel preview + prod (xxx.vercel.app) izin
             if (origin.endsWith(".vercel.app")) return cb(null, true);
 
-            // Burada error fırlatmak yerine false dönmek daha stabil
+            // Hata fırlatma yok -> stabil davranış
             return cb(null, false);
         },
         credentials: true,
@@ -66,7 +58,7 @@ app.use(
     })
 );
 
-// ✅ Preflight (OPTIONS) kesin cevap (çok önemli)
+// Preflight (OPTIONS) garanti
 app.options("*", cors());
 
 app.use(express.json());
@@ -74,11 +66,7 @@ app.use(express.json());
 /* ====================================================== */
 
 const upload = multer({ storage: multer.memoryStorage() });
-
 const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-
-const BUCKET = process.env.BUCKET || "talepler-ekler";
-const PORT = process.env.PORT || 4000;
 
 /* ================= Utils ================= */
 
@@ -101,9 +89,17 @@ const uuidRegex =
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
+app.get("/debug/env", (req, res) => {
+    res.json({
+        origin: req.headers.origin || null,
+        FRONTEND_URL: process.env.FRONTEND_URL || null,
+        allowedOrigins: Array.from(allowedOrigins),
+        PORT: process.env.PORT || null,
+    });
+});
+
 app.get("/routes", (_req, res) => {
     const routes = [];
-    // Express internal yapı — render debug için OK
     app._router.stack.forEach((m) => {
         if (m.route?.path) {
             const methods = Object.keys(m.route.methods).join(",").toUpperCase();
@@ -148,7 +144,7 @@ app.get("/api/kullanicilar", async (req, res) => {
 });
 
 /* ======================================================
-   ✅ Görevleri sorumlularla birleştirme helper
+   Görevleri sorumlularla birleştirme helper
 ====================================================== */
 async function enrichTasksWithSorumlular(tasks) {
     const ids = (tasks || []).map((t) => t?.id).filter(Boolean);
@@ -176,7 +172,7 @@ async function enrichTasksWithSorumlular(tasks) {
 }
 
 /* ======================================================
-   ✅ Görev create
+   Görev create
 ====================================================== */
 app.post("/api/gorevler/create", async (req, res) => {
     try {
@@ -261,7 +257,7 @@ app.post("/api/gorevler/create", async (req, res) => {
 });
 
 /* ======================================================
-   ✅ Görev listeleme
+   Görev listeleme
 ====================================================== */
 app.get("/api/gorevler", async (req, res) => {
     try {
@@ -306,7 +302,7 @@ app.get("/api/gorevler", async (req, res) => {
 });
 
 /* ======================================================
-   ✅ Birim görevleri
+   Birim görevleri
 ====================================================== */
 app.get("/api/gorevler/birim", async (req, res) => {
     try {
