@@ -149,17 +149,20 @@ export default function YeniTalep() {
                 if (!list.length) openToast("warning", "Birim listesi boş geldi.");
                 setBirimler(list);
             } catch (e) {
-                openToast("error", `Birimler alınamadı. ${e?.status ? `(HTTP ${e.status}) ` : ""}${e?.message || ""}`.trim());
+                openToast(
+                    "error",
+                    `Birimler alınamadı. ${e?.status ? `(HTTP ${e.status}) ` : ""}${e?.message || ""}`.trim()
+                );
                 if (alive) setBirimler([]);
             } finally {
                 if (alive) setLoadingBirimler(false);
             }
         })();
 
-        return () => { alive = false; };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [API]);
-    // Birim seçilince kullanıcıları yükle
+        return () => {
+            alive = false;
+        };
+    }, [API, openToast]);    // Birim seçilince kullanıcıları yükle
     useEffect(() => {
         let alive = true;
 
