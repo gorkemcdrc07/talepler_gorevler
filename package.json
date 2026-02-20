@@ -18,6 +18,8 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^13.5.0",
+    "cors": "^2.8.6",
+    "express": "^4.22.1",
     "formidable": "^3.5.4",
     "framer-motion": "^12.34.0",
     "lucide-react": "^0.563.0",
@@ -30,11 +32,12 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
     "client": "react-scripts start",
     "server": "node server/index.js",
     "dev": "concurrently \"npm run client\" \"npm run server\"",
     "build": "react-scripts build",
+    "vercel-build": "react-scripts build",
+    "start": "node server/index.js",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
