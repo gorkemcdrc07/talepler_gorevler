@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     Box,
@@ -80,19 +80,22 @@ async function fetchJson(url, options = {}) {
 
 export default function YeniTalep() {
     const navigate = useNavigate();
-    const user = getSession();
-
+    const user = useMemo(() => getSession(), []);
     const role = useMemo(() => normRole(user?.rol), [user?.rol]);
     const isAdmin = role === "admin" || role === "process";
 
     // Proxy ile çalışıyorsan root package.json içine şunu ekleyebilirsin:
     // "proxy": "http://localhost:4000"
-    const API = process.env.REACT_APP_API_URL || "http://localhost:4000";
+    const API = useMemo(() => process.env.REACT_APP_API_URL || "http://localhost:4000", []);
     const [loading, setLoading] = useState(false);
     const [toast, setToast] = useState({ open: false, type: "info", text: "" });
-    const openToast = (type, text) => setToast({ open: true, type, text });
-    const closeToast = () => setToast((t) => ({ ...t, open: false }));
+    const openToast = useCallback((type, text) => {
+        setToast({ open: true, type, text });
+    }, []);
 
+    const closeToast = useCallback(() => {
+        setToast((t) => ({ ...t, open: false }));
+    }, []);
     const sistemlerGorkem = useMemo(
         () => [
             "FTS",
@@ -142,27 +145,20 @@ export default function YeniTalep() {
             try {
                 const json = await fetchJson(`${API}/api/birimler`);
                 if (!alive) return;
-
                 const list = Array.isArray(json?.birimler) ? json.birimler : [];
                 if (!list.length) openToast("warning", "Birim listesi boş geldi.");
                 setBirimler(list);
             } catch (e) {
-                openToast(
-                    "error",
-                    `Birimler alınamadı. ${e?.status ? `(HTTP ${e.status}) ` : ""}${e?.message || ""}`.trim()
-                );
+                openToast("error", `Birimler alınamadı. ${e?.status ? `(HTTP ${e.status}) ` : ""}${e?.message || ""}`.trim());
                 if (alive) setBirimler([]);
             } finally {
                 if (alive) setLoadingBirimler(false);
             }
         })();
 
-        return () => {
-            alive = false;
-        };
+        return () => { alive = false; };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
+    }, [API]);
     // Birim seçilince kullanıcıları yükle
     useEffect(() => {
         let alive = true;
@@ -210,7 +206,7 @@ export default function YeniTalep() {
         return () => {
             alive = false;
         };
-    }, [form.birim, form.talep_edilen_id]);
+    }, [API, form.birim, form.talep_edilen_id]);
 
     const showSistemSelect = form.talep_edilen === "GÖRKEM ÇADIRCI";
 
