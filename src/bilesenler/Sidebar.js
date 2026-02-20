@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+﻿import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
     Avatar,
@@ -37,7 +37,7 @@ const SIDEBAR_W = 270;
 const SIDEBAR_W_MINI = 92;
 
 function normRole(v) {
-    return String(v || "").trim().toLocaleLowerCase("tr-TR").replaceAll("ı", "i");
+    return String(v || "").trim().toLocaleLowerCase("tr-TR").replaceAll("Ä±", "i");
 }
 
 function isActivePath(currentPath, itemPath) {
@@ -250,7 +250,7 @@ export default function Sidebar({ user, mini, setMini }) {
                 },
             }}
         >
-            {/* üst aurora glow */}
+            {/* Ã¼st aurora glow */}
             <Box
                 sx={{
                     position: "absolute",
@@ -275,7 +275,7 @@ export default function Sidebar({ user, mini, setMini }) {
                 )}
                 <Box sx={{ flex: 1 }} />
 
-                <Tooltip title={mini ? "Genişlet" : "Daralt"}>
+                <Tooltip title={mini ? "GeniÅŸlet" : "Daralt"}>
                     <IconButton
                         onClick={() => setMini((v) => !v)}
                         sx={{
@@ -293,7 +293,7 @@ export default function Sidebar({ user, mini, setMini }) {
 
             <Divider sx={{ borderColor: "rgba(0,242,254,0.14)" }} />
 
-            {/* Profil kartı */}
+            {/* Profil kartÄ± */}
             <Box sx={{ px: 2, py: 2, position: "relative" }}>
                 <Box
                     sx={{
@@ -345,7 +345,7 @@ export default function Sidebar({ user, mini, setMini }) {
                                 </Typography>
 
                                 <Typography sx={{ fontSize: 12, color: "rgba(255,255,255,0.62)", fontWeight: 850 }} noWrap>
-                                    {user?.birim || "-"} • {user?.unvan || "-"}
+                                    {user?.birim || "-"} seç {user?.unvan || "-"}
                                 </Typography>
 
                                 <Stack direction="row" spacing={0.8} alignItems="center" sx={{ mt: 0.7 }} flexWrap="wrap" useFlexGap>
@@ -379,7 +379,7 @@ export default function Sidebar({ user, mini, setMini }) {
                         )}
                     </Stack>
 
-                    {/* Mini modda küçük aksiyon */}
+                    {/* Mini modda kÃ¼Ã§Ã¼k aksiyon */}
                     {mini && (
                         <Box sx={{ px: 1.6, pb: 1.2, position: "relative" }}>
                             <Tooltip title="Dashboard">
@@ -424,7 +424,7 @@ export default function Sidebar({ user, mini, setMini }) {
                 })}
             </Stack>
 
-            {/* ALT SABİT ALAN — ULTRA MODERN */}
+            {/* ALT SABÄ°T ALAN â€” ULTRA MODERN */}
             <Box sx={{ mt: "auto", px: 1.35, pb: 1.4, position: "relative" }}>
                 {/* deeper glow */}
                 <Box
@@ -576,7 +576,7 @@ export default function Sidebar({ user, mini, setMini }) {
                                     </IconButton>
                                 </Tooltip>
 
-                                <Tooltip title="Görev Ekle" placement="right">
+                                <Tooltip title="GÃ¶rev Ekle" placement="right">
                                     <IconButton
                                         onClick={() => navigate("/gorev/ekle")}
                                         sx={{
@@ -600,7 +600,7 @@ export default function Sidebar({ user, mini, setMini }) {
 
                                 <Divider sx={{ borderColor: "rgba(255,255,255,0.10)" }} />
 
-                                <Tooltip title="Çıkış Yap" placement="right">
+                                <Tooltip title="Ã‡Ä±kÄ±ÅŸ Yap" placement="right">
                                     <IconButton
                                         onClick={logout}
                                         sx={{
@@ -705,7 +705,7 @@ export default function Sidebar({ user, mini, setMini }) {
                                         },
                                     }}
                                 >
-                                    Çıkış Yap
+                                    ÇIKIŞ Yap
                                 </Button>
                             </>
                         )}
@@ -715,3 +715,4 @@ export default function Sidebar({ user, mini, setMini }) {
         </Box>
     );
 }
+

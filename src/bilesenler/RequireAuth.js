@@ -1,4 +1,4 @@
-import { Navigate } from "react-router-dom";
+﻿import { Navigate } from "react-router-dom";
 
 function getSession() {
     try {
@@ -12,7 +12,7 @@ function normRole(v) {
     return String(v || "")
         .trim()
         .toLocaleLowerCase("tr-TR")
-        .replaceAll("�", "i");
+        .replaceAll("ı", "i");
 }
 
 export default function RequireAuth({ children, roles }) {
@@ -27,3 +27,4 @@ export default function RequireAuth({ children, roles }) {
 
     return children;
 }
+

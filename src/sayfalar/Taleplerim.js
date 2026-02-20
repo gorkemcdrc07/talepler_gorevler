@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
+﻿import { useEffect, useMemo, useState, useCallback } from "react";
 import {
     Box,
     Typography,
@@ -70,7 +70,7 @@ function niceBytes(n) {
 }
 
 /* ---------- Constants ---------- */
-const DURUMLAR = ["Hepsi", "Beklemede", "İnceleniyor", "Tamamlandı", "Reddedildi"];
+const DURUMLAR = ["Hepsi", "Beklemede", "Ä°nceleniyor", "TamamlandÄ±", "Reddedildi"];
 const ONCELIKLER = ["Hepsi", "Düşük", "Normal", "Yüksek", "Acil"];
 const SIRALAMA = {
     "En Yeni": "newest",
@@ -78,7 +78,6 @@ const SIRALAMA = {
     "Öncelik > Durum > Tarih": "prio_status_date",
     "Durum > Öncelik > Tarih": "status_prio_date",
 };
-
 const DURUM_STILLERI = {
     Beklemede: { renk: "#f59e0b", bg: "rgba(245, 158, 11, 0.14)" },
     "İnceleniyor": { renk: "#06b6d4", bg: "rgba(6, 182, 212, 0.14)" },
@@ -96,7 +95,7 @@ const ONCELIK_STILLERI = {
 };
 
 const prioWeight = (p) => ({ Acil: 0, Yüksek: 1, Normal: 2, Düşük: 3 }[p] ?? 9);
-const statusWeight = (s) => ({ Beklemede: 0, "İnceleniyor": 1, Tamamlandı: 2, Reddedildi: 3 }[s] ?? 9);
+const statusWeight = (s) => ({ Beklemede: 0, "inceleniyor": 1, Tamamlandı: 2, Reddedildi: 3 }[s] ?? 9);
 
 /* ---------- Modern tokens ---------- */
 const ACCENT = "#00f2fe";
@@ -169,7 +168,7 @@ export default function Taleplerim() {
 
         if (error) {
             console.log("SUPABASE ERROR:", error);
-            openToast("error", error.message || "Talepler çekilemedi.");
+            openToast("error", error.message || "Talepler Ã§ekilemedi.");
             setRows([]);
             setLoading(false);
             return;
@@ -333,7 +332,7 @@ export default function Taleplerim() {
                                 size="small"
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                label="Ara (talep no / başlık)"
+                                label="Ara"
                                 InputProps={{
                                     startAdornment: (
                                         <InputAdornment position="start">
@@ -565,7 +564,7 @@ export default function Taleplerim() {
                 >
                     <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ p: 2.2, pb: 1.3 }}>
                         <Typography sx={{ fontWeight: 980, color: "#fff", letterSpacing: "-0.6px" }} variant="h6">
-                            Talep Detayı
+                            Talep Detayları
                         </Typography>
                         <IconButton onClick={closeDetail} size="small" sx={{ color: softText.secondary, "&:hover": { color: "#fff" } }}>
                             <Close fontSize="small" />
@@ -578,7 +577,7 @@ export default function Taleplerim() {
                     {selected && (
                         <Stack spacing={1.5}>
                             <Box>
-                                <Typography sx={{ color: softText.muted, fontSize: 12, fontWeight: 900 }}>Başlık</Typography>
+                                <Typography sx={{ color: softText.muted, fontSize: 12, fontWeight: 900 }}>BAŞLIK</Typography>
                                 <Typography sx={{ color: "#fff", fontWeight: 980, mt: 0.5 }}>
                                     {selected.talep_no ? `${selected.talep_no} • ` : ""}
                                     {selected.baslik}
@@ -666,7 +665,7 @@ export default function Taleplerim() {
                                                             "&:hover": { borderColor: alpha(ACCENT, 0.65), bgcolor: "rgba(255,255,255,0.04)" },
                                                         }}
                                                     >
-                                                        Aç
+                                                        AÇ
                                                     </Button>
                                                 ) : (
                                                     <Chip size="small" label="URL yok" sx={{ bgcolor: "rgba(255,255,255,0.04)", color: softText.secondary, fontWeight: 900 }} />
@@ -839,3 +838,4 @@ const drawerChipSx = {
 };
 
 const infoIconSx = { fontSize: 16, color: "rgba(255,255,255,0.42)" };
+

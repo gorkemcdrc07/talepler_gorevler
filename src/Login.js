@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
     Box,
@@ -31,7 +31,7 @@ function normRole(v) {
     return String(v || "")
         .trim()
         .toLocaleLowerCase("tr-TR")
-        .replaceAll("ı", "i");
+        .replaceAll("Ä±", "i");
 }
 
 function getSession() {
@@ -57,7 +57,7 @@ export default function CleanTechAuth() {
         sifre: "",
     });
 
-    // ✅ Oturum varsa direkt yönlendir
+    // âœ… Oturum varsa direkt yÃ¶nlendir
     useEffect(() => {
         const s = getSession();
         if (s?.id) {
@@ -84,8 +84,8 @@ export default function CleanTechAuth() {
         const email = emailNormalized;
         if (!email) return "E-posta zorunlu.";
         if (!email.endsWith(EMAIL_DOMAIN))
-            return `Sadece ${EMAIL_DOMAIN} uzantılı mail kabul ediliyor.`;
-        if (!form.sifre || form.sifre.length < 4) return "Şifre zorunlu.";
+            return `Sadece ${EMAIL_DOMAIN} uzantÄ±lÄ± mail kabul ediliyor.`;
+        if (!form.sifre || form.sifre.length < 4) return "Åifre zorunlu.";
         return null;
     };
 
@@ -105,7 +105,7 @@ export default function CleanTechAuth() {
                 .eq("aktif", true)
                 .single();
 
-            if (error || !data) throw new Error("E-posta veya şifre hatalı.");
+            if (error || !data) throw new Error("E-posta veya ÅŸifre hatalÄ±.");
 
             await supabase
                 .from("kullanicilar")
@@ -115,14 +115,14 @@ export default function CleanTechAuth() {
             localStorage.setItem("oturum", JSON.stringify(data));
 
             const r = normRole(data.rol);
-            openToast("success", `Hoş geldin ${data.ad} 👋`);
+            openToast("success", `HoÅŸ geldin ${data.ad} ğŸ‘‹`);
 
             setTimeout(() => {
                 if (r === "admin" || r === "process") navigate("/admin");
                 else navigate("/anasayfa");
             }, 250);
         } catch (e) {
-            openToast("error", e?.message || "Giriş yapılamadı.");
+            openToast("error", e?.message || "GiriÅŸ yapÄ±lamadÄ±.");
         } finally {
             setLoading(false);
         }
@@ -238,7 +238,7 @@ export default function CleanTechAuth() {
                         </Stack>
 
                         <Typography sx={{ color: "rgba(255,255,255,0.55)", fontSize: 12 }}>
-                            Dahili Talep ve Çözüm Yönetimi
+                            Dahili Talep ve Ã‡Ã¶zÃ¼m YÃ¶netimi
                         </Typography>
 
                         <Divider
@@ -253,7 +253,7 @@ export default function CleanTechAuth() {
                         <Stack direction="row" spacing={1} alignItems="center" sx={{ color: "rgba(255,255,255,0.55)" }}>
                             <ShieldCheck size={16} />
                             <Typography sx={{ fontSize: 12, fontWeight: 700 }}>
-                                Kurumsal Giriş
+                                Kurumsal GiriÅŸ
                             </Typography>
                         </Stack>
                     </Stack>
@@ -281,7 +281,7 @@ export default function CleanTechAuth() {
 
                         <CompactInput
                             name="sifre"
-                            label="Güvenlik Şifresi"
+                            label="GÃ¼venlik Åifresi"
                             value={form.sifre}
                             type={showPass ? "text" : "password"}
                             icon={<Lock size={16} />}
@@ -335,7 +335,7 @@ export default function CleanTechAuth() {
                                 transition: "all .18s ease",
                             }}
                         >
-                            Sisteme Giriş Yap
+                            Sisteme GiriÅŸ Yap
                         </Button>
 
                         <Typography
@@ -347,7 +347,7 @@ export default function CleanTechAuth() {
                                 lineHeight: 1.6,
                             }}
                         >
-                            Hesap oluşturma kapalıdır. Erişim için IT / Sistem yöneticinizle iletişime geçin.
+                            Hesap oluÅŸturma kapalÄ±dÄ±r. EriÅŸim iÃ§in IT / Sistem yÃ¶neticinizle iletiÅŸime geÃ§in.
                         </Typography>
                     </Stack>
                 </Box>
@@ -416,3 +416,4 @@ function CompactInput({ icon, endAdornment, helperText, ...props }) {
         </Stack>
     );
 }
+

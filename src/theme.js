@@ -1,4 +1,4 @@
-export const ui = {
+﻿export const ui = {
     bg: "#050b16",
     panel: "#0b1220",
     card: "#0f172a",
@@ -15,3 +15,4 @@ export const ui = {
     warning: "#facc15",
     danger: "#fb7185"
 };
+

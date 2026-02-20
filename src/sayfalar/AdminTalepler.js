@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useState, useCallback } from "react";
+﻿import { useMemo, useEffect, useState, useCallback } from "react";
 import {
     Box,
     Typography,
@@ -66,7 +66,7 @@ function getSession() {
     }
 }
 function normRole(v) {
-    return String(v || "").trim().toLocaleLowerCase("tr-TR").replaceAll("ı", "i");
+    return String(v || "").trim().toLocaleLowerCase("tr-TR").replaceAll("Ä±", "i");
 }
 function toTrUpper(s) {
     return String(s || "").trim().toLocaleUpperCase("tr-TR");
@@ -92,7 +92,7 @@ function niceBytes(n) {
 }
 
 function fmtDuration(ms) {
-    if (!ms || ms < 0) return "—";
+    if (!ms || ms < 0) return "â€”";
     const totalSec = Math.floor(ms / 1000);
     const d = Math.floor(totalSec / 86400);
     const h = Math.floor((totalSec % 86400) / 3600);
@@ -110,16 +110,16 @@ const DURUMLAR = [
     "SIRAYA ALINDI",
     "İNCELENİYOR",
     "İŞLEME ALINDI",
-    "TEST EDİLECEK",
+    "TEST EDİLİYOR",
     "TAMAMLANDI",
-    "REDDEDİLDİ",
+    "REDDEDİLDİ°",
 ];
 
-const ONCELIKLER = ["Düşük", "Normal", "Yüksek", "Acil"];
+const ONCELIKLER = ["DÜŞÜK", "NORMAL", "YÜKSEK", "ACİL"];
 
 const SIRALAMA = {
-    "Öncelik > Durum > Tarih": "prio_status_date",
-    "Durum > Öncelik > Tarih": "status_prio_date",
+    "Ã–ncelik > Durum > Tarih": "prio_status_date",
+    "Durum > Ã–ncelik > Tarih": "status_prio_date",
     "En Yeni": "newest",
     "En Eski": "oldest",
 };
@@ -140,7 +140,7 @@ const DURUM_STILLERI = {
         bg: "rgba(6,182,212,0.14)",
         icon: <Bolt sx={{ fontSize: 16 }} />,
     },
-    "İŞLEME ALINDI": {
+    "İŞLEME ALINDI": {
         renk: "#22c55e",
         bg: "rgba(34,197,94,0.14)",
         icon: <CheckCircle sx={{ fontSize: 16 }} />,
@@ -164,14 +164,14 @@ const DURUM_STILLERI = {
 };
 
 const ONCELIK_STILLERI = {
-    Düşük: { renk: "#94a3b8", bg: "rgba(148,163,184,0.14)", icon: <LowPriority sx={{ fontSize: 16 }} /> },
+    DÜŞÜK: { renk: "#94a3b8", bg: "rgba(148,163,184,0.14)", icon: <LowPriority sx={{ fontSize: 16 }} /> },
     Normal: { renk: "#60a5fa", bg: "rgba(96,165,250,0.14)", icon: <CheckCircle sx={{ fontSize: 16 }} /> },
-    Yüksek: { renk: "#f97316", bg: "rgba(249,115,22,0.14)", icon: <PriorityHigh sx={{ fontSize: 16 }} /> },
+    YÜKSEK: { renk: "#f97316", bg: "rgba(249,115,22,0.14)", icon: <PriorityHigh sx={{ fontSize: 16 }} /> },
     Acil: { renk: "#ef4444", bg: "rgba(239,68,68,0.14)", icon: <Report sx={{ fontSize: 16 }} /> },
     default: { renk: "#94a3b8", bg: "rgba(148,163,184,0.14)", icon: <DoNotDisturbOn sx={{ fontSize: 16 }} /> },
 };
 
-const prioWeight = (p) => ({ Acil: 0, Yüksek: 1, Normal: 2, Düşük: 3 }[p] ?? 9);
+const prioWeight = (p) => ({ Acil: 0, YÜKSEK: 1, Normal: 2, DÜŞÜK: 3 }[p] ?? 9);
 const statusWeight = (s) =>
 ({
     BEKLEMEDE: 0,
@@ -194,8 +194,8 @@ export default function AdminTalepler() {
     const [rows, setRows] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const [sirala, setSirala] = useState(SIRALAMA["Öncelik > Durum > Tarih"]);
-    const [tab, setTab] = useState("Tümü");
+    const [sirala, setSirala] = useState(SIRALAMA["Ã–ncelik > Durum > Tarih"]);
+    const [tab, setTab] = useState("TÃ¼mÃ¼");
     const [search, setSearch] = useState("");
     const debouncedSearch = useDebouncedValue(search, 250);
 
@@ -234,10 +234,10 @@ export default function AdminTalepler() {
             )
             .order("created_at", { ascending: false });
 
-        // Admin değilse: sadece bana atananlar
+        // Admin deÄŸilse: sadece bana atananlar
         if (!isAdmin) {
             if (!hedefAdSoyad) {
-                openToast("error", "Oturum bilgisi yok. Lütfen tekrar giriş yap.");
+                openToast("error", "Oturum bilgisi yok. LÃ¼tfen tekrar giriÅŸ yap.");
                 setRows([]);
                 setLoading(false);
                 return;
@@ -249,7 +249,7 @@ export default function AdminTalepler() {
 
         if (error) {
             console.log("SUPABASE ERROR:", error);
-            openToast("error", error.message || "Talepler çekilemedi.");
+            openToast("error", error.message || "Talepler Ã§ekilemedi.");
             setRows([]);
             setLoading(false);
             return;
@@ -263,7 +263,7 @@ export default function AdminTalepler() {
         load();
     }, [load]);
 
-    // Herkes güncelleyebilir (istersen buraya yetki eklenir)
+    // Herkes gÃ¼ncelleyebilir (istersen buraya yetki eklenir)
     const updateField = async (id, patch) => {
         // optimistic
         setRows((p) => p.map((r) => (r.id === id ? { ...r, ...patch } : r)));
@@ -273,25 +273,25 @@ export default function AdminTalepler() {
 
         if (error) {
             console.log("UPDATE ERROR:", error);
-            openToast("error", error.message || "Güncelleme başarısız.");
+            openToast("error", error.message || "GÃ¼ncelleme baÅŸarÄ±sÄ±z.");
             await load();
             return;
         }
 
-        openToast("success", "Güncellendi ✅");
+        openToast("success", "GÃ¼ncellendi âœ…");
     };
 
     const handleDurumChange = (id, yeniDurum) => {
         const nowIso = new Date().toISOString();
         const patch = { durum: yeniDurum };
 
-        if (yeniDurum === "İŞLEME ALINDI") {
+        if (yeniDurum === "Ä°ÅLEME ALINDI") {
             const row = rows.find((x) => x.id === id);
-            // ilk kez işleme alındıysa setle (reset istersen bu if'i kaldır)
+            // ilk kez iÅŸleme alÄ±ndÄ±ysa setle (reset istersen bu if'i kaldÄ±r)
             if (!row?.isleme_alindi_at) patch.isleme_alindi_at = nowIso;
         }
 
-        if (yeniDurum === "TEST EDİLECEK" || yeniDurum === "TAMAMLANDI") {
+        if (yeniDurum === "TEST EDÄ°LECEK" || yeniDurum === "TAMAMLANDI") {
             patch.tamamlandi_at = nowIso;
         }
 
@@ -308,7 +308,7 @@ export default function AdminTalepler() {
         }, {});
         const urgent = rows.filter((r) => (r.oncelik || "Normal") === "Acil").length;
         const pending = rows.filter((r) => (r.durum || "BEKLEMEDE") === "BEKLEMEDE").length;
-        const inReview = rows.filter((r) => (r.durum || "BEKLEMEDE") === "İNCELENİYOR").length;
+        const inReview = rows.filter((r) => (r.durum || "BEKLEMEDE") === "Ä°NCELENÄ°YOR").length;
         const done = rows.filter((r) => (r.durum || "BEKLEMEDE") === "TAMAMLANDI").length;
         return { total, byDurum, urgent, pending, inReview, done };
     }, [rows]);
@@ -316,7 +316,7 @@ export default function AdminTalepler() {
     const filteredRows = useMemo(() => {
         let list = [...rows];
 
-        if (tab !== "Tümü") list = list.filter((r) => (r.durum || "BEKLEMEDE") === tab);
+        if (tab !== "TÃ¼mÃ¼") list = list.filter((r) => (r.durum || "BEKLEMEDE") === tab);
         if (filterDurum !== "Hepsi") list = list.filter((r) => (r.durum || "BEKLEMEDE") === filterDurum);
         if (filterOncelik !== "Hepsi") list = list.filter((r) => (r.oncelik || "Normal") === filterOncelik);
 
@@ -369,10 +369,10 @@ export default function AdminTalepler() {
             <Box sx={{ mb: 2.5, display: "flex", gap: 2, alignItems: "flex-end", justifyContent: "space-between", flexWrap: "wrap" }}>
                 <Box sx={{ minWidth: 280 }}>
                     <Typography variant="h4" sx={{ fontWeight: 950, color: "#fff", letterSpacing: "-1.2px", lineHeight: 1.05 }}>
-                        {isAdmin ? "Talep Yönetimi" : "Bana Atanan Talepler"}
+                        {isAdmin ? "Talep YÃ¶netimi" : "Bana Atanan Talepler"}
                     </Typography>
                     <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.55)", mt: 0.5 }}>
-                        {isAdmin ? "Talepleri filtrele, sırala ve anında yönet." : `Atanan kişi: ${hedefAdSoyad || "—"}`}
+                        {isAdmin ? "Talepleri filtrele, sÄ±rala ve anÄ±nda yÃ¶net." : `Atanan kiÅŸi: ${hedefAdSoyad || "â€”"}`}
                     </Typography>
                 </Box>
 
@@ -398,7 +398,7 @@ export default function AdminTalepler() {
                             size="small"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            label="Ara (talep no / başlık / kullanıcı / atanan)"
+                            label="Ara (talep no / baÅŸlÄ±k / kullanÄ±cÄ± / atanan)"
                             InputProps={{
                                 startAdornment: (
                                     <InputAdornment position="start">
@@ -417,7 +417,7 @@ export default function AdminTalepler() {
                             size="small"
                             value={sirala}
                             onChange={(e) => setSirala(e.target.value)}
-                            label="Sıralama"
+                            label="SÄ±ralama"
                             InputProps={{
                                 startAdornment: (
                                     <InputAdornment position="start">
@@ -460,7 +460,7 @@ export default function AdminTalepler() {
                             "& .MuiTabs-indicator": { height: 3, borderRadius: 99, background: "linear-gradient(90deg, #00f2fe, #4facfe)" },
                         }}
                     >
-                        <Tab value="Tümü" label={<TabLabel label="Tümü" count={stats.total} />} />
+                        <Tab value="TÃ¼mÃ¼" label={<TabLabel label="TÃ¼mÃ¼" count={stats.total} />} />
                         {DURUMLAR.map((d) => (
                             <Tab key={d} value={d} label={<TabLabel label={d} count={stats.byDurum[d] ?? 0} />} />
                         ))}
@@ -487,7 +487,7 @@ export default function AdminTalepler() {
                                 ))}
                             </TextField>
 
-                            <TextField select size="small" label="Öncelik" value={filterOncelik} onChange={(e) => setFilterOncelik(e.target.value)} sx={miniSelectSx}>
+                            <TextField select size="small" label="Ã–ncelik" value={filterOncelik} onChange={(e) => setFilterOncelik(e.target.value)} sx={miniSelectSx}>
                                 <MenuItem value="Hepsi">Hepsi</MenuItem>
                                 {ONCELIKLER.map((p) => (
                                     <MenuItem key={p} value={p}>
@@ -500,7 +500,7 @@ export default function AdminTalepler() {
 
                             <Button
                                 onClick={() => {
-                                    setTab("Tümü");
+                                    setTab("TÃ¼mÃ¼");
                                     setSearch("");
                                     setFilterDurum("Hepsi");
                                     setFilterOncelik("Hepsi");
@@ -533,8 +533,8 @@ export default function AdminTalepler() {
                         </Stack>
                     ) : sortedRows.length === 0 ? (
                         <Box sx={{ p: 3, textAlign: "center" }}>
-                            <Typography sx={{ color: "rgba(255,255,255,0.75)", fontWeight: 950 }}>Sonuç bulunamadı</Typography>
-                            <Typography sx={{ color: "rgba(255,255,255,0.45)", fontSize: 13, mt: 0.5 }}>Arama/filtreleri değiştirip tekrar dene.</Typography>
+                            <Typography sx={{ color: "rgba(255,255,255,0.75)", fontWeight: 950 }}>SonuÃ§ bulunamadÄ±</Typography>
+                            <Typography sx={{ color: "rgba(255,255,255,0.45)", fontSize: 13, mt: 0.5 }}>Arama/filtreleri deÄŸiÅŸtirip tekrar dene.</Typography>
                         </Box>
                     ) : (
                         <Stack spacing={1.1} sx={{ py: 1 }}>
@@ -544,7 +544,7 @@ export default function AdminTalepler() {
                                 const stil = DURUM_STILLERI[durum] || DURUM_STILLERI.default;
                                 const pStil = ONCELIK_STILLERI[oncelik] || ONCELIK_STILLERI.default;
 
-                                const adSoyad = r.olusturan ? `${r.olusturan.ad ?? ""} ${r.olusturan.soyad ?? ""}`.trim() : "Bilinmeyen Kullanıcı";
+                                const adSoyad = r.olusturan ? `${r.olusturan.ad ?? ""} ${r.olusturan.soyad ?? ""}`.trim() : "Bilinmeyen KullanÄ±cÄ±";
                                 const avatarChar = (adSoyad?.[0] || "?").toUpperCase();
                                 const created = new Date(r.created_at);
 
@@ -554,7 +554,7 @@ export default function AdminTalepler() {
                                 const startAt = r.isleme_alindi_at ? new Date(r.isleme_alindi_at) : null;
                                 const endAt = r.tamamlandi_at ? new Date(r.tamamlandi_at) : null;
                                 const durationMs = startAt && endAt ? endAt - startAt : null;
-                                const isRunning = !!startAt && !endAt && (durum === "İŞLEME ALINDI");
+                                const isRunning = !!startAt && !endAt && (durum === "Ä°ÅLEME ALINDI");
 
                                 return (
                                     <Paper key={r.id} sx={rowCardSx}>
@@ -589,7 +589,7 @@ export default function AdminTalepler() {
                                             <Box sx={{ minWidth: 0, flex: 1 }}>
                                                 <Stack direction="row" spacing={1} alignItems="center" sx={{ minWidth: 0, flexWrap: "wrap" }}>
                                                     <Typography sx={{ fontWeight: 950, color: "#f8fafc", letterSpacing: "-0.4px", minWidth: 0 }} noWrap>
-                                                        {r.talep_no ? `${r.talep_no} • ` : ""}
+                                                        {r.talep_no ? `${r.talep_no} â€¢ ` : ""}
                                                         {r.baslik}
                                                     </Typography>
 
@@ -629,7 +629,7 @@ export default function AdminTalepler() {
                                                         <Chip
                                                             size="small"
                                                             icon={<Bolt sx={{ fontSize: 16 }} />}
-                                                            label="İşlemde…"
+                                                            label="Ä°ÅŸlemdeâ€¦"
                                                             sx={{
                                                                 height: 24,
                                                                 bgcolor: alpha("#22c55e", 0.12),
@@ -641,7 +641,7 @@ export default function AdminTalepler() {
                                                         />
                                                     )}
 
-                                                    {/* Öncelik chip + ikon */}
+                                                    {/* Ã–ncelik chip + ikon */}
                                                     <Chip
                                                         size="small"
                                                         icon={pStil.icon}
@@ -660,8 +660,8 @@ export default function AdminTalepler() {
 
                                                 <Stack direction="row" spacing={1.4} alignItems="center" sx={{ mt: 0.6, minWidth: 0, flexWrap: "wrap" }}>
                                                     <Meta icon={<Person sx={metaIconSx} />} text={adSoyad} />
-                                                    <Meta icon={<Timer sx={metaIconSx} />} text={`${created.toLocaleDateString("tr-TR")} • ${created.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })}`} />
-                                                    <Meta icon={<Person sx={metaIconSx} />} text={`Atanan: ${r.talep_edilen || "—"}`} />
+                                                    <Meta icon={<Timer sx={metaIconSx} />} text={`${created.toLocaleDateString("tr-TR")} â€¢ ${created.toLocaleTimeString("tr-TR", { hour: "2-digit", minute: "2-digit" })}`} />
+                                                    <Meta icon={<Person sx={metaIconSx} />} text={`Atanan: ${r.talep_edilen || "â€”"}`} />
                                                 </Stack>
                                             </Box>
                                         </Stack>
@@ -670,7 +670,7 @@ export default function AdminTalepler() {
                                             <TextField
                                                 select
                                                 size="small"
-                                                label="Öncelik"
+                                                label="Ã–ncelik"
                                                 value={oncelik}
                                                 onChange={(e) => handleOncelikChange(r.id, e.target.value)}
                                                 sx={miniSelectSx}
@@ -713,7 +713,7 @@ export default function AdminTalepler() {
                                                 }}
                                             />
 
-                                            <Tooltip title="Detayları Görüntüle">
+                                            <Tooltip title="DetaylarÄ± GÃ¶rÃ¼ntÃ¼le">
                                                 <IconButton
                                                     onClick={() => openDetail(r)}
                                                     size="small"
@@ -754,7 +754,7 @@ export default function AdminTalepler() {
                 <Box sx={{ p: 2.2 }}>
                     <Stack direction="row" alignItems="center" justifyContent="space-between">
                         <Typography sx={{ fontWeight: 950, color: "#fff", letterSpacing: "-0.6px" }} variant="h6">
-                            Talep Detayı
+                            Talep DetayÄ±
                         </Typography>
                         <IconButton onClick={closeDetail} size="small" sx={{ color: "rgba(255,255,255,0.55)", "&:hover": { color: "#fff" } }}>
                             <Close fontSize="small" />
@@ -766,22 +766,22 @@ export default function AdminTalepler() {
                     {selected && (
                         <Stack spacing={1.4}>
                             <Box>
-                                <Typography sx={{ color: "rgba(255,255,255,0.55)", fontSize: 12, fontWeight: 900 }}>Başlık</Typography>
+                                <Typography sx={{ color: "rgba(255,255,255,0.55)", fontSize: 12, fontWeight: 900 }}>BaÅŸlÄ±k</Typography>
                                 <Typography sx={{ color: "#fff", fontWeight: 950, mt: 0.4 }}>
-                                    {selected.talep_no ? `${selected.talep_no} • ` : ""}
+                                    {selected.talep_no ? `${selected.talep_no} â€¢ ` : ""}
                                     {selected.baslik}
                                 </Typography>
                             </Box>
 
-                            {/* Süre chip */}
+                            {/* SÃ¼re chip */}
                             {selected.isleme_alindi_at && (
                                 <Chip
                                     size="small"
                                     icon={<Timer sx={{ fontSize: 16 }} />}
                                     label={
                                         selected.tamamlandi_at
-                                            ? `Bu kadar sürede tamamlandı: ${fmtDuration(new Date(selected.tamamlandi_at) - new Date(selected.isleme_alindi_at))}`
-                                            : `İşleme alındı: ${new Date(selected.isleme_alindi_at).toLocaleString("tr-TR")}`
+                                            ? `Bu kadar sÃ¼rede tamamlandÄ±: ${fmtDuration(new Date(selected.tamamlandi_at) - new Date(selected.isleme_alindi_at))}`
+                                            : `Ä°ÅŸleme alÄ±ndÄ±: ${new Date(selected.isleme_alindi_at).toLocaleString("tr-TR")}`
                                     }
                                     sx={{
                                         bgcolor: "rgba(255,255,255,0.04)",
@@ -794,13 +794,13 @@ export default function AdminTalepler() {
                                 />
                             )}
 
-                            {/* Drawer içinden de değiştir */}
+                            {/* Drawer iÃ§inden de deÄŸiÅŸtir */}
                             <Stack direction={{ xs: "column", sm: "row" }} spacing={1} alignItems="center">
                                 <TextField
                                     select
                                     fullWidth
                                     size="small"
-                                    label="Öncelik"
+                                    label="Ã–ncelik"
                                     value={selected.oncelik || "Normal"}
                                     onChange={(e) => handleOncelikChange(selected.id, e.target.value)}
                                     sx={miniSelectSx}
@@ -832,21 +832,21 @@ export default function AdminTalepler() {
                             <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
 
                             <Box>
-                                <Typography sx={{ color: "rgba(255,255,255,0.55)", fontSize: 12, fontWeight: 900 }}>Oluşturan</Typography>
+                                <Typography sx={{ color: "rgba(255,255,255,0.55)", fontSize: 12, fontWeight: 900 }}>OluÅŸturan</Typography>
                                 <Typography sx={{ color: "#fff", fontWeight: 900, mt: 0.4 }}>
-                                    {selected.olusturan ? `${selected.olusturan.ad ?? ""} ${selected.olusturan.soyad ?? ""}`.trim() : "Bilinmeyen Kullanıcı"}
+                                    {selected.olusturan ? `${selected.olusturan.ad ?? ""} ${selected.olusturan.soyad ?? ""}`.trim() : "Bilinmeyen KullanÄ±cÄ±"}
                                 </Typography>
                             </Box>
 
                             <Box>
                                 <Typography sx={{ color: "rgba(255,255,255,0.55)", fontSize: 12, fontWeight: 900 }}>Talep Edilen</Typography>
-                                <Typography sx={{ color: "#fff", fontWeight: 900, mt: 0.4 }}>{selected.talep_edilen || "—"}</Typography>
+                                <Typography sx={{ color: "#fff", fontWeight: 900, mt: 0.4 }}>{selected.talep_edilen || "â€”"}</Typography>
                             </Box>
 
                             <Box>
-                                <Typography sx={{ color: "rgba(255,255,255,0.55)", fontSize: 12, fontWeight: 900 }}>Açıklama</Typography>
+                                <Typography sx={{ color: "rgba(255,255,255,0.55)", fontSize: 12, fontWeight: 900 }}>AÃ§Ä±klama</Typography>
                                 <Typography sx={{ color: "rgba(255,255,255,0.86)", mt: 0.4, lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
-                                    {selected.aciklama || "—"}
+                                    {selected.aciklama || "â€”"}
                                 </Typography>
                             </Box>
 
@@ -881,9 +881,9 @@ export default function AdminTalepler() {
                                                         {name}
                                                     </Typography>
                                                     <Typography sx={{ color: "rgba(255,255,255,0.55)", fontSize: 12 }} noWrap>
-                                                        {type || "dosya"} {size ? `• ${niceBytes(size)}` : ""}
-                                                        {isPdf(type) ? " • PDF" : ""}
-                                                        {isImage(type) ? " • Görsel" : ""}
+                                                        {type || "dosya"} {size ? `â€¢ ${niceBytes(size)}` : ""}
+                                                        {isPdf(type) ? " â€¢ PDF" : ""}
+                                                        {isImage(type) ? " â€¢ GÃ¶rsel" : ""}
                                                     </Typography>
                                                 </Stack>
 
@@ -905,7 +905,7 @@ export default function AdminTalepler() {
                                                             "&:hover": { borderColor: "rgba(0,242,254,0.55)", bgcolor: "rgba(255,255,255,0.03)" },
                                                         }}
                                                     >
-                                                        Aç
+                                                        AÃ§
                                                     </Button>
                                                 ) : (
                                                     <Chip size="small" label="URL yok" sx={{ bgcolor: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.6)", fontWeight: 900 }} />
@@ -918,28 +918,28 @@ export default function AdminTalepler() {
                                 <Typography sx={{ color: "rgba(255,255,255,0.45)", fontSize: 13 }}>Ek bulunmuyor.</Typography>
                             )}
 
-                            {/* Hızlı aksiyonlar */}
+                            {/* HÄ±zlÄ± aksiyonlar */}
                             <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
-                            <Typography sx={{ color: "rgba(255,255,255,0.55)", fontSize: 12, fontWeight: 900 }}>Hızlı Aksiyonlar</Typography>
+                            <Typography sx={{ color: "rgba(255,255,255,0.55)", fontSize: 12, fontWeight: 900 }}>HÄ±zlÄ± Aksiyonlar</Typography>
 
                             <Stack direction="row" spacing={1} flexWrap="wrap">
-                                <Button size="small" variant="contained" startIcon={<Bolt />} onClick={() => handleDurumChange(selected.id, "İNCELENİYOR")} sx={quickBtnSx}>
-                                    İnceleniyor
+                                <Button size="small" variant="contained" startIcon={<Bolt />} onClick={() => handleDurumChange(selected.id, "Ä°NCELENÄ°YOR")} sx={quickBtnSx}>
+                                    Ä°nceleniyor
                                 </Button>
-                                <Button size="small" variant="contained" startIcon={<CheckCircle />} onClick={() => handleDurumChange(selected.id, "İŞLEME ALINDI")} sx={quickBtnSx}>
-                                    İşleme Alındı
+                                <Button size="small" variant="contained" startIcon={<CheckCircle />} onClick={() => handleDurumChange(selected.id, "Ä°ÅLEME ALINDI")} sx={quickBtnSx}>
+                                    Ä°ÅŸleme AlÄ±ndÄ±
                                 </Button>
-                                <Button size="small" variant="contained" startIcon={<AssignmentTurnedIn />} onClick={() => handleDurumChange(selected.id, "TEST EDİLECEK")} sx={quickBtnSx}>
+                                <Button size="small" variant="contained" startIcon={<AssignmentTurnedIn />} onClick={() => handleDurumChange(selected.id, "TEST EDÄ°LECEK")} sx={quickBtnSx}>
                                     Test Edilecek
                                 </Button>
                                 <Button size="small" variant="contained" startIcon={<AssignmentTurnedIn />} onClick={() => handleDurumChange(selected.id, "TAMAMLANDI")} sx={quickBtnSx}>
-                                    Tamamlandı
+                                    TamamlandÄ±
                                 </Button>
                                 <Button
                                     size="small"
                                     variant="contained"
                                     startIcon={<Cancel />}
-                                    onClick={() => handleDurumChange(selected.id, "REDDEDİLDİ")}
+                                    onClick={() => handleDurumChange(selected.id, "REDDEDÄ°LDÄ°")}
                                     sx={{ ...quickBtnSx, bgcolor: alpha("#ef4444", 0.22), "&:hover": { bgcolor: alpha("#ef4444", 0.28) } }}
                                 >
                                     Reddedildi
@@ -1096,3 +1096,4 @@ const quickBtnSx = {
     boxShadow: "none",
     "&:hover": { bgcolor: "rgba(0,242,254,0.24)", boxShadow: "none" },
 };
+

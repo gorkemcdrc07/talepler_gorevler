@@ -1,9 +1,9 @@
-import { createClient } from "@supabase/supabase-js";
+ï»¿import { createClient } from "@supabase/supabase-js";
 import formidable from "formidable";
 import fs from "fs";
 
 export const config = {
-    api: { bodyParser: false }, // formidable için şart
+    api: { bodyParser: false }, // formidable iÃ§in ÅŸart
 };
 
 const supabaseAdmin = createClient(
@@ -39,10 +39,10 @@ export default async function handler(req, res) {
         const olusturan_id = String(fields.olusturan_id || ""); // auth yok -> local id
 
         if (!olusturan_id) return res.status(400).json({ message: "olusturan_id zorunlu" });
-        if (!baslik || baslik.length < 4) return res.status(400).json({ message: "Başlık geçersiz" });
-        if (!aciklama || aciklama.length < 10) return res.status(400).json({ message: "Açıklama geçersiz" });
+        if (!baslik || baslik.length < 4) return res.status(400).json({ message: "BaÅŸlÄ±k geÃ§ersiz" });
+        if (!aciklama || aciklama.length < 10) return res.status(400).json({ message: "AÃ§Ä±klama geÃ§ersiz" });
         if (!talep_edilen) return res.status(400).json({ message: "Talep edilen zorunlu" });
-        if (!istenilen_tarih) return res.status(400).json({ message: "İstenilen tarih zorunlu" });
+        if (!istenilen_tarih) return res.status(400).json({ message: "Ä°stenilen tarih zorunlu" });
 
         // 1) DB insert
         const payload = {
@@ -53,7 +53,7 @@ export default async function handler(req, res) {
             istenilen_tarih, // date: YYYY-MM-DD
             talep_edilen,
             talep_edilecek_sistem,
-            olusturan_id, // senin sistemindeki kullanıcı id
+            olusturan_id, // senin sistemindeki kullanÄ±cÄ± id
         };
 
         const { data: inserted, error: insErr } = await supabaseAdmin
@@ -90,8 +90,8 @@ export default async function handler(req, res) {
                 .upload(path, buf, { contentType, upsert: false });
 
             if (upErr) {
-                // dosya upload fail olsa bile talep yaratıldı; istersen burada rollback yaparsın
-                return res.status(400).json({ message: `Dosya yüklenemedi: ${upErr.message}` });
+                // dosya upload fail olsa bile talep yaratÄ±ldÄ±; istersen burada rollback yaparsÄ±n
+                return res.status(400).json({ message: `Dosya yÃ¼klenemedi: ${upErr.message}` });
             }
 
             // public bucket ise link:
@@ -106,7 +106,7 @@ export default async function handler(req, res) {
             });
         }
 
-        // 3) ekler yaz (jsonb kolon adı: ekler)
+        // 3) ekler yaz (jsonb kolon adÄ±: ekler)
         if (attachments.length) {
             const { error: updErr } = await supabaseAdmin
                 .from("talepler")
@@ -121,3 +121,4 @@ export default async function handler(req, res) {
         return res.status(500).json({ message: e?.message || "Server error" });
     }
 }
+

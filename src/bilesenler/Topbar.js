@@ -1,4 +1,4 @@
-import { Box, Chip, IconButton, Stack, Typography } from "@mui/material";
+﻿import { Box, Chip, IconButton, Stack, Typography } from "@mui/material";
 import { Menu } from "lucide-react";
 import { useLocation } from "react-router-dom";
 
@@ -45,3 +45,4 @@ export default function Topbar({ user, onToggleSidebar }) {
         </Box>
     );
 }
+
