@@ -1,4 +1,4 @@
-﻿import { useMemo, useEffect, useState, useCallback } from "react";
+import { useMemo, useEffect, useState, useCallback } from "react";
 import {
     Box,
     Typography,

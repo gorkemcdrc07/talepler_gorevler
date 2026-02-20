@@ -1,4 +1,4 @@
-﻿import { Box, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import AppLayout from "../bilesenler/AppLayout";
 
 export default function AnaSayfa() {
