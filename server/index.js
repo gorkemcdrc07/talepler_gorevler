@@ -31,37 +31,44 @@ const app = express();
 
 /* ================= CORS =================
    ✅ Render'da: FRONTEND URL (Vercel) env’den gelsin
-   - Vercel’de REACT_APP_API_URL var (backend)
-   - Backend’de de FRONTEND_URL env’i veriyoruz
+   - Frontend: https://talepler-gorevler.vercel.app
+   - Backend: Render env -> FRONTEND_URL = https://talepler-gorevler.vercel.app
 ====================================================== */
 
-const FRONTEND_URL = process.env.FRONTEND_URL || ""; // ör: https://xxx.vercel.app
+const FRONTEND_URL = (process.env.FRONTEND_URL || "").trim(); // ör: https://xxx.vercel.app
 
-const corsOptions = {
-    origin: (origin, cb) => {
-        // Postman/curl gibi tools origin göndermez -> izin ver
-        if (!origin) return cb(null, true);
+const allowedOrigins = new Set(
+    [
+        "http://localhost:3000",
+        "http://localhost:5173",
+        FRONTEND_URL, // boş değilse eklenir
+    ].filter(Boolean)
+);
 
-        const allowed = new Set([
-            "http://localhost:3000",
-            "http://localhost:5173",
-            FRONTEND_URL,
-        ]);
+app.use(
+    cors({
+        origin: (origin, cb) => {
+            // Postman/curl gibi tools origin göndermez -> izin ver
+            if (!origin) return cb(null, true);
 
-        // FRONTEND_URL boşsa sadece localhost'a izin ver
-        if (allowed.has(origin)) return cb(null, true);
+            // allow list
+            if (allowedOrigins.has(origin)) return cb(null, true);
 
-        // İstersen Vercel preview subdomainlerini de kabul etmek için:
-        // if (origin.endsWith(".vercel.app")) return cb(null, true);
+            // Vercel preview subdomainlerini de kabul et (isteğe bağlı ama pratik)
+            if (origin.endsWith(".vercel.app")) return cb(null, true);
 
-        return cb(new Error(`CORS blocked: ${origin}`));
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization", "Accept"],
-};
+            // Burada error fırlatmak yerine false dönmek daha stabil
+            return cb(null, false);
+        },
+        credentials: true,
+        methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization", "Accept"],
+    })
+);
 
-app.use(cors(corsOptions));
+// ✅ Preflight (OPTIONS) kesin cevap (çok önemli)
+app.options("*", cors());
+
 app.use(express.json());
 
 /* ====================================================== */
