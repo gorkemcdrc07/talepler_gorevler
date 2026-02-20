@@ -31,8 +31,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import AppLayout from "../bilesenler/AppLayout";
 
-const API_BASE = "http://localhost:4000";
-
+const API_BASE = (process.env.REACT_APP_API_BASE || "http://localhost:4000").replace(/\/$/, "");
 function getSession() {
     try {
         return JSON.parse(localStorage.getItem("oturum") || "null");

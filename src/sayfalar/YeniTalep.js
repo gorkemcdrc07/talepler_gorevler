@@ -87,8 +87,7 @@ export default function YeniTalep() {
 
     // Proxy ile çalışıyorsan root package.json içine şunu ekleyebilirsin:
     // "proxy": "http://localhost:4000"
-    const API = "http://localhost:4000";
-
+    const API = process.env.REACT_APP_API_URL || "http://localhost:4000";
     const [loading, setLoading] = useState(false);
     const [toast, setToast] = useState({ open: false, type: "info", text: "" });
     const openToast = (type, text) => setToast({ open: true, type, text });

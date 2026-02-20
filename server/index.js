@@ -2,32 +2,60 @@
 import cors from "cors";
 import multer from "multer";
 import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
 import { createClient } from "@supabase/supabase-js";
 
 /* ======================================================
-   ENV (server/.env zorla okunur)
+   ENV
+   - Local'de .env kullanırsın (server/.env veya kök .env)
+   - Render'da Environment Variables panelinden verirsin
 ====================================================== */
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
-dotenv.config({ path: path.join(__dirname, ".env") });
+// ✅ Render için doğru kullanım: (path zorlamadan)
+dotenv.config();
+
+// Not: Eğer local'de server/.env kullanıyorsan, iki seçenek:
+// 1) server klasöründe çalıştırınca otomatik yüklenir (dotenv.config())
+// 2) İstersen aşağıdaki satırı açıp server/.env'yi localde zorlayabilirsin:
+//
+// dotenv.config({ path: new URL("./.env", import.meta.url).pathname });
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-if (!SUPABASE_URL) throw new Error("SUPABASE_URL eksik (server/.env)");
-if (!SUPABASE_SERVICE_ROLE_KEY) throw new Error("SUPABASE_SERVICE_ROLE_KEY eksik (server/.env)");
+if (!SUPABASE_URL) throw new Error("SUPABASE_URL eksik (ENV)");
+if (!SUPABASE_SERVICE_ROLE_KEY) throw new Error("SUPABASE_SERVICE_ROLE_KEY eksik (ENV)");
 
 /* ====================================================== */
 
 const app = express();
 
-/* ================= CORS ================= */
+/* ================= CORS =================
+   ✅ Render'da: FRONTEND URL (Vercel) env’den gelsin
+   - Vercel’de REACT_APP_API_URL var (backend)
+   - Backend’de de FRONTEND_URL env’i veriyoruz
+====================================================== */
+
+const FRONTEND_URL = process.env.FRONTEND_URL || ""; // ör: https://xxx.vercel.app
 
 const corsOptions = {
-    origin: ["http://localhost:3000", "http://localhost:5173"],
+    origin: (origin, cb) => {
+        // Postman/curl gibi tools origin göndermez -> izin ver
+        if (!origin) return cb(null, true);
+
+        const allowed = new Set([
+            "http://localhost:3000",
+            "http://localhost:5173",
+            FRONTEND_URL,
+        ]);
+
+        // FRONTEND_URL boşsa sadece localhost'a izin ver
+        if (allowed.has(origin)) return cb(null, true);
+
+        // İstersen Vercel preview subdomainlerini de kabul etmek için:
+        // if (origin.endsWith(".vercel.app")) return cb(null, true);
+
+        return cb(new Error(`CORS blocked: ${origin}`));
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization", "Accept"],
@@ -48,7 +76,11 @@ const PORT = process.env.PORT || 4000;
 /* ================= Utils ================= */
 
 function safeFileName(name = "dosya") {
-    return name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9.\-_]/g, "").slice(0, 120);
+    return name
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9.\-_]/g, "")
+        .slice(0, 120);
 }
 
 function safeId(v) {
@@ -62,9 +94,9 @@ const uuidRegex =
 
 app.get("/health", (_req, res) => res.json({ ok: true }));
 
-// ✅ Route listesi (404 vs için hayat kurtarır)
 app.get("/routes", (_req, res) => {
     const routes = [];
+    // Express internal yapı — render debug için OK
     app._router.stack.forEach((m) => {
         if (m.route?.path) {
             const methods = Object.keys(m.route.methods).join(",").toUpperCase();
@@ -109,7 +141,7 @@ app.get("/api/kullanicilar", async (req, res) => {
 });
 
 /* ======================================================
-   ✅ GÖREVLERİ sorumlularla birleştirme helper
+   ✅ Görevleri sorumlularla birleştirme helper
 ====================================================== */
 async function enrichTasksWithSorumlular(tasks) {
     const ids = (tasks || []).map((t) => t?.id).filter(Boolean);
@@ -137,8 +169,7 @@ async function enrichTasksWithSorumlular(tasks) {
 }
 
 /* ======================================================
-   ✅ GÖREV CREATE
-   POST /api/gorevler/create
+   ✅ Görev create
 ====================================================== */
 app.post("/api/gorevler/create", async (req, res) => {
     try {
@@ -163,34 +194,25 @@ app.post("/api/gorevler/create", async (req, res) => {
             ? body.sorumlular.map((x) => safeId(x)).filter(Boolean)
             : [];
 
-        // --- validations ---
-        if (!baslik || baslik.length < 4)
-            return res.status(400).json({ message: "Başlık geçersiz (min 4)." });
-
+        if (!baslik || baslik.length < 4) return res.status(400).json({ message: "Başlık geçersiz (min 4)." });
         if (!birim) return res.status(400).json({ message: "Birim zorunlu." });
 
         if (!baslangic_tarih) return res.status(400).json({ message: "baslangic_tarih zorunlu." });
         if (!bitis_tarih) return res.status(400).json({ message: "bitis_tarih zorunlu." });
-        if (bitis_tarih < baslangic_tarih)
-            return res.status(400).json({ message: "Bitiş tarihi başlangıçtan önce olamaz." });
+        if (bitis_tarih < baslangic_tarih) return res.status(400).json({ message: "Bitiş tarihi başlangıçtan önce olamaz." });
 
         const allowedP = new Set(["rutin", "dusuk", "orta", "yuksek", "kritik"]);
-        if (!allowedP.has(oncelik))
-            return res.status(400).json({ message: "Öncelik geçersiz." });
+        if (!allowedP.has(oncelik)) return res.status(400).json({ message: "Öncelik geçersiz." });
 
         if (!olusturan_id) return res.status(400).json({ message: "olusturan_id zorunlu." });
-        if (!uuidRegex.test(olusturan_id))
-            return res.status(400).json({ message: "olusturan_id uuid olmalı." });
+        if (!uuidRegex.test(olusturan_id)) return res.status(400).json({ message: "olusturan_id uuid olmalı." });
 
-        if (!sorumlular.length)
-            return res.status(400).json({ message: "En az 1 sorumlu zorunlu." });
+        if (!sorumlular.length) return res.status(400).json({ message: "En az 1 sorumlu zorunlu." });
 
         for (const uid of sorumlular) {
-            if (!uuidRegex.test(uid))
-                return res.status(400).json({ message: `Sorumlu id uuid olmalı: ${uid}` });
+            if (!uuidRegex.test(uid)) return res.status(400).json({ message: `Sorumlu id uuid olmalı: ${uid}` });
         }
 
-        // 1) gorevler insert
         const gorevPayload = {
             baslik,
             aciklama,
@@ -213,7 +235,6 @@ app.post("/api/gorevler/create", async (req, res) => {
 
         const gorevId = inserted.id;
 
-        // 2) gorev_sorumlular insert
         const rows = sorumlular.map((kullanici_id) => ({
             gorev_id: gorevId,
             kullanici_id,
@@ -222,7 +243,6 @@ app.post("/api/gorevler/create", async (req, res) => {
         const { error: linkErr } = await supabaseAdmin.from("gorev_sorumlular").insert(rows);
 
         if (linkErr) {
-            // rollback
             await supabaseAdmin.from("gorevler").delete().eq("id", gorevId);
             return res.status(400).json({ message: linkErr.message });
         }
@@ -234,8 +254,7 @@ app.post("/api/gorevler/create", async (req, res) => {
 });
 
 /* ======================================================
-   ✅ GÖREV LİSTELEME
-   GET /api/gorevler?userId=UUID (opsiyonel)
+   ✅ Görev listeleme
 ====================================================== */
 app.get("/api/gorevler", async (req, res) => {
     try {
@@ -267,11 +286,7 @@ app.get("/api/gorevler", async (req, res) => {
             if (error) return res.status(400).json({ message: error.message });
             tasks = data || [];
         } else {
-            const { data, error } = await supabaseAdmin
-                .from("gorevler")
-                .select("*")
-                .order("bitis_tarih", { ascending: true });
-
+            const { data, error } = await supabaseAdmin.from("gorevler").select("*").order("bitis_tarih", { ascending: true });
             if (error) return res.status(400).json({ message: error.message });
             tasks = data || [];
         }
@@ -284,8 +299,7 @@ app.get("/api/gorevler", async (req, res) => {
 });
 
 /* ======================================================
-   ✅ BİRİM GÖREVLERİ
-   GET /api/gorevler/birim?birim=...
+   ✅ Birim görevleri
 ====================================================== */
 app.get("/api/gorevler/birim", async (req, res) => {
     try {
@@ -307,7 +321,7 @@ app.get("/api/gorevler/birim", async (req, res) => {
     }
 });
 
-/* ================= TALEP CREATE ================= */
+/* ================= Talep create (dosya upload) ================= */
 
 app.post("/api/talepler/create", upload.array("files", 6), async (req, res) => {
     try {
@@ -315,8 +329,7 @@ app.post("/api/talepler/create", upload.array("files", 6), async (req, res) => {
 
         const olusturan_id = safeId(body.olusturan_id);
         if (!olusturan_id) return res.status(400).json({ message: "olusturan_id zorunlu" });
-        if (!uuidRegex.test(olusturan_id))
-            return res.status(400).json({ message: "olusturan_id uuid olmalı" });
+        if (!uuidRegex.test(olusturan_id)) return res.status(400).json({ message: "olusturan_id uuid olmalı" });
 
         const payload = {
             baslik: body.baslik,
@@ -329,12 +342,7 @@ app.post("/api/talepler/create", upload.array("files", 6), async (req, res) => {
             olusturan_id,
         };
 
-        const { data: inserted, error } = await supabaseAdmin
-            .from("talepler")
-            .insert(payload)
-            .select("id")
-            .single();
-
+        const { data: inserted, error } = await supabaseAdmin.from("talepler").insert(payload).select("id").single();
         if (error) return res.status(400).json({ message: error.message });
 
         const talepId = inserted.id;
@@ -361,11 +369,7 @@ app.post("/api/talepler/create", upload.array("files", 6), async (req, res) => {
         }
 
         if (attachments.length) {
-            const { error: updErr } = await supabaseAdmin
-                .from("talepler")
-                .update({ ekler: attachments })
-                .eq("id", talepId);
-
+            const { error: updErr } = await supabaseAdmin.from("talepler").update({ ekler: attachments }).eq("id", talepId);
             if (updErr) return res.status(400).json({ message: updErr.message });
         }
 
@@ -377,4 +381,6 @@ app.post("/api/talepler/create", upload.array("files", 6), async (req, res) => {
 
 /* ====================================================== */
 
-app.listen(PORT, () => console.log(`API running on http://localhost:${PORT}`));
+app.listen(PORT, () => {
+    console.log(`API running on port ${PORT}`);
+});

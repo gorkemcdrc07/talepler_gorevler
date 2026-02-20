@@ -70,7 +70,7 @@ function niceBytes(n) {
 }
 
 /* ---------- Constants ---------- */
-const DURUMLAR = ["Hepsi", "Beklemede", "Ä°nceleniyor", "TamamlandÄ±", "Reddedildi"];
+const DURUMLAR = ["Hepsi", "Beklemede", "İnceleniyor", "Tamamlandı", "Reddedildi"];
 const ONCELIKLER = ["Hepsi", "Düşük", "Normal", "Yüksek", "Acil"];
 const SIRALAMA = {
     "En Yeni": "newest",
@@ -168,7 +168,7 @@ export default function Taleplerim() {
 
         if (error) {
             console.log("SUPABASE ERROR:", error);
-            openToast("error", error.message || "Talepler Ã§ekilemedi.");
+            openToast("error", error.message || "Talepler Çekilmedi.");
             setRows([]);
             setLoading(false);
             return;

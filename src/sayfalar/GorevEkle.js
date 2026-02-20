@@ -31,8 +31,7 @@ import {
 
 import AppLayout from "../bilesenler/AppLayout";
 
-const API_BASE = "http://localhost:4000";
-
+const API_BASE = (process.env.REACT_APP_API_BASE || "http://localhost:4000").replace(/\/$/, "");
 const PRIORITIES = [
     { value: "rutin", label: "RUTİN" },
     { value: "dusuk", label: "Düşük" },

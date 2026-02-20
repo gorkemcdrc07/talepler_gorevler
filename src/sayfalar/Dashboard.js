@@ -29,7 +29,8 @@ import {
 import { BarChart, LineChart, PieChart } from "@mui/x-charts";
 import AppLayout from "../bilesenler/AppLayout";
 
-const API_BASE = "http://localhost:4000";
+// ✅ CANLI/LOCAL uyumlu
+const API_BASE = (process.env.REACT_APP_API_BASE || "http://localhost:4000").replace(/\/$/, "");
 
 /* =======================
    Helpers
