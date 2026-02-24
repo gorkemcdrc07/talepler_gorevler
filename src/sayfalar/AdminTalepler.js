@@ -284,23 +284,46 @@ export default function AdminTalepler() {
         openToast("success", "Güncellendi ✅");
     };
 
-    const handleDurumChange = (id, yeniDurum) => {
+    const handleDurumChange = async (id, yeniDurum) => {
+        const row = rows.find((x) => x.id === id);
+        const eskiDurum = row?.durum || "BEKLEMEDE";
+
+        if (eskiDurum === yeniDurum) return;
+
         const nowIso = new Date().toISOString();
-        const patch = { durum: yeniDurum };
 
-        if (yeniDurum === "İŞLEME ALINDI") {
-            const row = rows.find((x) => x.id === id);
-            // ilk kez işleme alındıysa setle (reset istersen bu if'i kaldır)
-            if (!row?.isleme_alindi_at) patch.isleme_alindi_at = nowIso;
+        // Optimistic UI
+        setRows((p) => p.map((r) => (r.id === id ? { ...r, durum: yeniDurum } : r)));
+        setSelected((p) => (p?.id === id ? { ...p, durum: yeniDurum } : p));
+
+        // 1) Log kaydı ekle
+        const { error: logErr } = await supabase.from("talep_durum_log").insert({
+            talep_id: id,
+            from_durum: eskiDurum,
+            to_durum: yeniDurum,
+            changed_at: nowIso,
+            changed_by: oturum?.id || null, // sende oturum user id varsa
+        });
+
+        if (logErr) {
+            console.log("LOG ERROR:", logErr);
+            openToast("error", logErr.message || "Durum geçmişi yazılamadı.");
+            await load(); // geri topla
+            return;
         }
 
-        if (yeniDurum === "TEST EDİLECEK" || yeniDurum === "TAMAMLANDI") {
-            patch.tamamlandi_at = nowIso;
+        // 2) Talepler tablosunda güncel durumu güncelle
+        const { error: updErr } = await supabase.from("talepler").update({ durum: yeniDurum }).eq("id", id);
+
+        if (updErr) {
+            console.log("UPDATE ERROR:", updErr);
+            openToast("error", updErr.message || "Durum güncellenemedi.");
+            await load();
+            return;
         }
 
-        return updateField(id, patch);
+        openToast("success", "Durum güncellendi ✅");
     };
-
     const handleOncelikChange = (id, yeniOncelik) => updateField(id, { oncelik: yeniOncelik });
 
     const stats = useMemo(() => {

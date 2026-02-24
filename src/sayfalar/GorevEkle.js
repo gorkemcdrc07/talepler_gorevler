@@ -18,18 +18,10 @@ import {
     Typography,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import {
-    Building2,
-    Plus,
-    Save,
-    ShieldCheck,
-    Sparkles,
-    Tag,
-    Users,
-    X,
-} from "lucide-react";
+import { Plus, Save, ShieldCheck, Sparkles, Tag, Users, X } from "lucide-react";
 
 import AppLayout from "../bilesenler/AppLayout";
+import { supabase } from "../lib/supabase";
 
 const API_BASE = (process.env.REACT_APP_API_BASE || "http://localhost:4000").replace(/\/$/, "");
 const PRIORITIES = [
@@ -40,28 +32,13 @@ const PRIORITIES = [
     { value: "kritik", label: "Kritik" },
 ];
 
+/** session */
 function getSession() {
     try {
         return JSON.parse(localStorage.getItem("oturum") || "null");
     } catch {
         return null;
     }
-}
-
-async function fetchJson(url) {
-    const res = await fetch(url, {
-        method: "GET",
-        headers: { Accept: "application/json" },
-    });
-    const text = await res.text();
-    let data = null;
-    try {
-        data = text ? JSON.parse(text) : null;
-    } catch {
-        data = null;
-    }
-    if (!res.ok) throw new Error(data?.message || `${res.status} ${res.statusText}`);
-    return data;
 }
 
 async function postJson(url, body) {
@@ -175,9 +152,10 @@ function GorevEkleContent() {
     const [saving, setSaving] = useState(false);
     const [toast, setToast] = useState({ open: false, type: "success", msg: "" });
 
-    const [birimler, setBirimler] = useState([]);
-    const [loadingBirimler, setLoadingBirimler] = useState(false);
-    const [birimErr, setBirimErr] = useState("");
+    // ✅ Birim artık formda yok; oturumdan user birimini bulacağız
+    const [userBirim, setUserBirim] = useState("");
+    const [userBirimLoading, setUserBirimLoading] = useState(false);
+    const [userBirimErr, setUserBirimErr] = useState("");
 
     const [kullanicilar, setKullanicilar] = useState([]);
     const [loadingUsers, setLoadingUsers] = useState(false);
@@ -187,7 +165,6 @@ function GorevEkleContent() {
         baslik: "",
         aciklama: "",
         oncelik: "rutin",
-        birim: "",
         sorumlular: [],
         baslangicTarih: "",
         bitisTarih: "",
@@ -209,35 +186,60 @@ function GorevEkleContent() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [form.baslangicTarih]);
 
+    // ✅ 1) giriş yapan kullanıcının birimini kullanicilar tablosundan bul
     useEffect(() => {
         let alive = true;
+
         (async () => {
-            setLoadingBirimler(true);
-            setBirimErr("");
+            setUserBirimLoading(true);
+            setUserBirimErr("");
+            setUserBirim("");
+
+            if (!olusturanId) {
+                setUserBirimLoading(false);
+                setUserBirimErr('Oturum bulunamadı. localStorage "oturum" içinde id olmalı.');
+                return;
+            }
+
             try {
-                const data = await fetchJson(`${API_BASE}/api/birimler`);
-                const list = Array.isArray(data?.birimler) ? data.birimler : [];
+                const { data, error } = await supabase
+                    .from("kullanicilar")
+                    .select("birim")
+                    .eq("id", olusturanId)
+                    .maybeSingle();
+
+                if (error) throw error;
                 if (!alive) return;
-                setBirimler(list);
-                if (!list.length) setBirimErr("Birim listesi boş döndü.");
+
+                const b = String(data?.birim || "").trim();
+                if (!b) {
+                    setUserBirimErr("Kullanıcının birimi boş. kullanicilar.birim alanını kontrol et.");
+                    setUserBirim("");
+                } else {
+                    setUserBirim(b);
+                }
             } catch (e) {
                 if (!alive) return;
-                setBirimler([]);
-                setBirimErr(e?.message || "Birimler yüklenemedi.");
+                setUserBirimErr(e?.message || "Kullanıcının birimi alınamadı.");
+                setUserBirim("");
             } finally {
-                if (alive) setLoadingBirimler(false);
+                if (alive) setUserBirimLoading(false);
             }
         })();
+
         return () => {
             alive = false;
         };
-    }, []);
+    }, [olusturanId]);
 
+    // ✅ 2) userBirim'e göre aynı birimdeki kullanıcıları çek -> sorumlular listesi
     useEffect(() => {
         let alive = true;
+
         (async () => {
             setUserErr("");
-            const b = String(form.birim || "").trim();
+            const b = String(userBirim || "").trim();
+
             if (!b) {
                 setKullanicilar([]);
                 setForm((s) => ({ ...s, sorumlular: [] }));
@@ -246,11 +248,16 @@ function GorevEkleContent() {
 
             setLoadingUsers(true);
             try {
-                const data = await fetchJson(`${API_BASE}/api/kullanicilar?birim=${encodeURIComponent(b)}`);
-                const list = Array.isArray(data?.users) ? data.users : [];
+                const { data, error } = await supabase
+                    .from("kullanicilar")
+                    .select("id, ad_soyad, birim")
+                    .eq("birim", b)
+                    .order("ad_soyad", { ascending: true });
+
+                if (error) throw error;
                 if (!alive) return;
 
-                const cleaned = list
+                const cleaned = (Array.isArray(data) ? data : [])
                     .map((u) => ({
                         id: u?.id ?? null,
                         ad_soyad: String(u?.ad_soyad || "").trim(),
@@ -260,6 +267,7 @@ function GorevEkleContent() {
 
                 setKullanicilar(cleaned);
 
+                // seçili sorumlular birimde yoksa düşür
                 setForm((s) => ({
                     ...s,
                     sorumlular: s.sorumlular.filter((x) =>
@@ -281,7 +289,7 @@ function GorevEkleContent() {
         return () => {
             alive = false;
         };
-    }, [form.birim]);
+    }, [userBirim]);
 
     const errors = useMemo(() => {
         const e = {};
@@ -289,8 +297,6 @@ function GorevEkleContent() {
 
         if (!baslik) e.baslik = "Başlık zorunlu";
         else if (baslik.length < 4) e.baslik = "Başlık en az 4 karakter olmalı";
-
-        if (!String(form.birim || "").trim()) e.birim = "Birim zorunlu";
 
         if (!form.baslangicTarih) e.baslangicTarih = "Başlangıç tarihi zorunlu";
         if (!form.bitisTarih) e.bitisTarih = "Bitiş tarihi zorunlu";
@@ -300,8 +306,11 @@ function GorevEkleContent() {
 
         if (!form.sorumlular?.length) e.sorumlular = "En az 1 sorumlu seçmelisin";
 
+        // kullanıcı birimi yoksa form geçersiz say
+        if (!String(userBirim || "").trim()) e.birim = "Kullanıcının birimi bulunamadı";
+
         return e;
-    }, [form]);
+    }, [form, userBirim]);
 
     const isValid = Object.keys(errors).length === 0;
 
@@ -309,9 +318,7 @@ function GorevEkleContent() {
         const t = form.etiket.trim();
         if (!t) return;
 
-        const exists = form.etiketler.some(
-            (x) => x.toLocaleLowerCase("tr-TR") === t.toLocaleLowerCase("tr-TR")
-        );
+        const exists = form.etiketler.some((x) => x.toLocaleLowerCase("tr-TR") === t.toLocaleLowerCase("tr-TR"));
         if (exists) {
             setForm((s) => ({ ...s, etiket: "" }));
             return;
@@ -339,30 +346,26 @@ function GorevEkleContent() {
                 baslik: form.baslik.trim(),
                 aciklama: form.aciklama.trim(),
                 oncelik: form.oncelik,
-                birim: form.birim,
+                birim: userBirim, // ✅ birim otomatik
                 baslangic_tarih: form.baslangicTarih,
                 bitis_tarih: form.bitisTarih,
                 etiketler: form.etiketler,
                 gizli: form.gizli,
                 olusturan_id: olusturanId,
-                sorumlular: form.sorumlular.map((u) => u.id).filter(Boolean), // ✅ backend’e id listesi
+                sorumlular: form.sorumlular.map((u) => u.id).filter(Boolean),
             };
 
-            // ✅ DB’ye kaydet
             await postJson(`${API_BASE}/api/gorevler/create`, payload);
 
             setToast({ open: true, type: "success", msg: "Görev oluşturuldu." });
-
-            // ✅ ister burada form reset kalsın, ister direkt listeye gitsin:
             setTimeout(() => navigate("/gorevlerim"), 600);
         } catch (e) {
             setToast({
                 open: true,
                 type: "error",
-                msg:
-                    e?.message?.includes("404")
-                        ? "Kaydetme endpoint'i yok. Backend'e /api/gorevler/create eklemelisin."
-                        : (e?.message || "Görev oluşturulamadı. Tekrar deneyin."),
+                msg: e?.message?.includes("404")
+                    ? "Kaydetme endpoint'i yok. Backend'e /api/gorevler/create eklemelisin."
+                    : e?.message || "Görev oluşturulamadı. Tekrar deneyin.",
             });
         } finally {
             setSaving(false);
@@ -438,11 +441,9 @@ function GorevEkleContent() {
                         </Box>
 
                         <Box>
-                            <Typography sx={{ fontWeight: 980, fontSize: 24, lineHeight: 1.05, color: "#fff" }}>
-                                Görev Ekle
-                            </Typography>
+                            <Typography sx={{ fontWeight: 980, fontSize: 24, lineHeight: 1.05, color: "#fff" }}>Görev Ekle</Typography>
                             <Typography sx={{ color: "rgba(255,255,255,0.72)", fontSize: 13, mt: 0.5 }}>
-                                Birim seç → sorumluları belirle → tarih aralığını gir → kaydet.
+                                Sorumlular otomatik olarak <b>{userBirimLoading ? "..." : userBirim || "—"}</b> biriminden gelir.
                             </Typography>
 
                             <Stack direction="row" spacing={1} sx={{ mt: 1.1 }} flexWrap="wrap" useFlexGap>
@@ -462,10 +463,7 @@ function GorevEkleContent() {
                                 borderRadius: 2,
                                 borderColor: "rgba(255,255,255,0.20)",
                                 color: "rgba(255,255,255,0.92)",
-                                "&:hover": {
-                                    borderColor: "rgba(0,242,254,0.35)",
-                                    background: "rgba(0,242,254,0.06)",
-                                },
+                                "&:hover": { borderColor: "rgba(0,242,254,0.35)", background: "rgba(0,242,254,0.06)" },
                             }}
                         >
                             Vazgeç
@@ -486,10 +484,7 @@ function GorevEkleContent() {
                                     background: "linear-gradient(90deg, rgba(0,242,254,1), rgba(34,211,238,0.98))",
                                     boxShadow: "0 22px 70px rgba(0,242,254,0.28)",
                                 },
-                                "&.Mui-disabled": {
-                                    opacity: 0.45,
-                                    color: "rgba(2,6,23,0.55)",
-                                },
+                                "&.Mui-disabled": { opacity: 0.45, color: "rgba(2,6,23,0.55)" },
                             }}
                         >
                             {saving ? "Kaydediliyor..." : "Kaydet"}
@@ -509,10 +504,7 @@ function GorevEkleContent() {
                         backdropFilter: "blur(14px)",
                         overflow: "hidden",
                         transition: "transform .18s ease, box-shadow .18s ease",
-                        "&:hover": {
-                            transform: "translateY(-2px)",
-                            boxShadow: "0 30px 100px rgba(0,0,0,0.45)",
-                        },
+                        "&:hover": { transform: "translateY(-2px)", boxShadow: "0 30px 100px rgba(0,0,0,0.45)" },
                     }}
                 >
                     <CardContent sx={{ p: { xs: 2, md: 2.6 } }}>
@@ -541,10 +533,7 @@ function GorevEkleContent() {
                                         <MenuItem
                                             key={x.value}
                                             value={x.value}
-                                            sx={{
-                                                color: "rgba(255,255,255,0.92)",
-                                                "&:hover": { background: "rgba(0,242,254,0.08)" },
-                                            }}
+                                            sx={{ color: "rgba(255,255,255,0.92)", "&:hover": { background: "rgba(0,242,254,0.08)" } }}
                                         >
                                             {x.label}
                                         </MenuItem>
@@ -566,43 +555,6 @@ function GorevEkleContent() {
                             <Divider sx={{ borderColor: "rgba(255,255,255,0.08)" }} />
 
                             <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
-                                <TextField
-                                    fullWidth
-                                    select
-                                    label="Birim *"
-                                    value={form.birim}
-                                    onChange={(e) => setForm((s) => ({ ...s, birim: e.target.value }))}
-                                    error={!!errors.birim}
-                                    helperText={errors.birim || birimErr || " "}
-                                    sx={fieldSx()}
-                                    SelectProps={{ MenuProps: menuPropsDark }}
-                                    InputProps={{
-                                        startAdornment: (
-                                            <Box sx={{ mr: 1, display: "grid", placeItems: "center", opacity: 0.9, color: "rgba(255,255,255,0.85)" }}>
-                                                <Building2 size={18} />
-                                            </Box>
-                                        ),
-                                        endAdornment: loadingBirimler ? (
-                                            <Box sx={{ mr: 1 }}>
-                                                <CircularProgress size={16} />
-                                            </Box>
-                                        ) : null,
-                                    }}
-                                >
-                                    {birimler.map((b) => (
-                                        <MenuItem
-                                            key={b}
-                                            value={b}
-                                            sx={{
-                                                color: "rgba(255,255,255,0.92)",
-                                                "&:hover": { background: "rgba(0,242,254,0.08)" },
-                                            }}
-                                        >
-                                            {b}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
-
                                 <TextField
                                     fullWidth
                                     label="Başlangıç Tarihi *"
@@ -686,9 +638,9 @@ function GorevEkleContent() {
                                     <TextField
                                         {...params}
                                         label="Sorumlu(lar) *"
-                                        placeholder={form.birim ? "Kullanıcı seç..." : "Önce birim seç"}
-                                        error={!!errors.sorumlular}
-                                        helperText={errors.sorumlular || userErr || " "}
+                                        placeholder={userBirim ? "Kullanıcı seç..." : "Birim bulunamadı"}
+                                        error={!!errors.sorumlular || !!errors.birim}
+                                        helperText={errors.sorumlular || errors.birim || userErr || userBirimErr || " "}
                                         sx={fieldSx()}
                                         InputProps={{
                                             ...params.InputProps,
@@ -702,7 +654,7 @@ function GorevEkleContent() {
                                             ),
                                             endAdornment: (
                                                 <>
-                                                    {loadingUsers ? <CircularProgress size={16} /> : null}
+                                                    {loadingUsers || userBirimLoading ? <CircularProgress size={16} /> : null}
                                                     {params.InputProps.endAdornment}
                                                 </>
                                             ),
@@ -743,10 +695,7 @@ function GorevEkleContent() {
                                         borderRadius: 2,
                                         borderColor: "rgba(255,255,255,0.18)",
                                         color: "rgba(255,255,255,0.92)",
-                                        "&:hover": {
-                                            borderColor: "rgba(0,242,254,0.38)",
-                                            background: "rgba(0,242,254,0.06)",
-                                        },
+                                        "&:hover": { borderColor: "rgba(0,242,254,0.38)", background: "rgba(0,242,254,0.06)" },
                                     }}
                                 >
                                     Etiket Ekle
@@ -815,46 +764,24 @@ function GorevEkleContent() {
                         top: { md: 18 },
                         alignSelf: { md: "flex-start" },
                         transition: "transform .18s ease, box-shadow .18s ease",
-                        "&:hover": {
-                            transform: "translateY(-2px)",
-                            boxShadow: "0 30px 100px rgba(0,0,0,0.45)",
-                        },
+                        "&:hover": { transform: "translateY(-2px)", boxShadow: "0 30px 100px rgba(0,0,0,0.45)" },
                     }}
                 >
                     <CardContent sx={{ p: { xs: 2, md: 2.6 } }}>
                         <Typography sx={{ fontWeight: 980, color: "#fff", mb: 1.2 }}>Kontrol</Typography>
                         <Typography sx={{ color: "rgba(255,255,255,0.72)", fontSize: 13, lineHeight: 1.65 }}>
-                            Kaydetmek için <b>Başlık</b>, <b>Birim</b>, <b>Tarih aralığı</b> ve en az <b>1 sorumlu</b> gerekli.
+                            Kaydetmek için <b>Başlık</b>, <b>Tarih aralığı</b> ve en az <b>1 sorumlu</b> gerekli.
                         </Typography>
 
                         <Divider sx={{ borderColor: "rgba(255,255,255,0.08)", my: 1.4 }} />
 
                         {!isValid ? (
-                            <Alert
-                                severity="warning"
-                                variant="outlined"
-                                sx={{ borderColor: "rgba(255,255,255,0.20)", color: "rgba(255,255,255,0.88)" }}
-                            >
+                            <Alert severity="warning" variant="outlined" sx={{ borderColor: "rgba(255,255,255,0.20)", color: "rgba(255,255,255,0.88)" }}>
                                 Eksik alanlar var. Sol taraftaki kırmızı uyarıları tamamla.
                             </Alert>
                         ) : (
-                            <Alert
-                                severity="success"
-                                variant="outlined"
-                                sx={{ borderColor: "rgba(0,242,254,0.25)", color: "rgba(255,255,255,0.90)" }}
-                            >
+                            <Alert severity="success" variant="outlined" sx={{ borderColor: "rgba(0,242,254,0.25)", color: "rgba(255,255,255,0.90)" }}>
                                 Form hazır. Kaydedebilirsin.
-                            </Alert>
-                        )}
-
-                        {birimErr && !birimler.length && (
-                            <Alert sx={{ mt: 1.2 }} severity="info" variant="outlined">
-                                {birimErr}
-                            </Alert>
-                        )}
-                        {userErr && (
-                            <Alert sx={{ mt: 1.2 }} severity="info" variant="outlined">
-                                {userErr}
                             </Alert>
                         )}
 
@@ -863,6 +790,27 @@ function GorevEkleContent() {
                                 Oturum (olusturan_id) bulunamadı. localStorage "oturum" içinde id olmalı.
                             </Alert>
                         )}
+
+                        {userBirimErr && (
+                            <Alert sx={{ mt: 1.2 }} severity="info" variant="outlined">
+                                {userBirimErr}
+                            </Alert>
+                        )}
+
+                        {userErr && (
+                            <Alert sx={{ mt: 1.2 }} severity="info" variant="outlined">
+                                {userErr}
+                            </Alert>
+                        )}
+
+                        <Box sx={{ mt: 1.2 }}>
+                            <Typography sx={{ color: "rgba(255,255,255,0.72)", fontWeight: 900, fontSize: 13 }}>
+                                Kullanıcının Birimi:
+                            </Typography>
+                            <Typography sx={{ color: "#fff", fontWeight: 950, mt: 0.3 }}>
+                                {userBirimLoading ? "Yükleniyor..." : userBirim || "—"}
+                            </Typography>
+                        </Box>
                     </CardContent>
                 </Card>
             </Stack>
@@ -873,12 +821,7 @@ function GorevEkleContent() {
                 onClose={() => setToast((s) => ({ ...s, open: false }))}
                 anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
             >
-                <Alert
-                    severity={toast.type}
-                    variant="filled"
-                    onClose={() => setToast((s) => ({ ...s, open: false }))}
-                    sx={{ width: "100%" }}
-                >
+                <Alert severity={toast.type} variant="filled" onClose={() => setToast((s) => ({ ...s, open: false }))} sx={{ width: "100%" }}>
                     {toast.msg}
                 </Alert>
             </Snackbar>
@@ -893,4 +836,3 @@ export default function GorevEkle() {
         </AppLayout>
     );
 }
-

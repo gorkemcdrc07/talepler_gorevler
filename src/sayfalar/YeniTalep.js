@@ -35,6 +35,7 @@ import {
     CheckCircle2,
 } from "lucide-react";
 import AppLayout from "../bilesenler/AppLayout";
+import { supabase } from "../lib/supabase";
 
 function getSession() {
     try {
@@ -48,34 +49,12 @@ function normRole(v) {
     return String(v || "").trim().toLocaleLowerCase("tr-TR");
 }
 
-async function fetchJson(url, options = {}) {
-    const res = await fetch(url, {
-        ...options,
-        headers: {
-            Accept: "application/json",
-            ...(options.headers || {}),
-        },
-    });
-
-    const contentType = res.headers.get("content-type") || "";
-    let data = null;
-
-    if (contentType.includes("application/json")) {
-        data = await res.json().catch(() => null);
-    } else {
-        const text = await res.text().catch(() => "");
-        data = { message: text?.slice(0, 300) || "JSON olmayan cevap döndü." };
-    }
-
-    if (!res.ok) {
-        const msg = data?.message || `HTTP ${res.status} ${res.statusText || ""}`.trim();
-        const err = new Error(msg);
-        err.status = res.status;
-        err.data = data;
-        throw err;
-    }
-
-    return data;
+function safeFileName(name) {
+    return String(name || "dosya")
+        .normalize("NFKD")
+        .replace(/[^\w.\-]+/g, "_")
+        .replace(/_+/g, "_")
+        .replace(/^_+|_+$/g, "");
 }
 
 export default function YeniTalep() {
@@ -84,9 +63,8 @@ export default function YeniTalep() {
     const role = useMemo(() => normRole(user?.rol), [user?.rol]);
     const isAdmin = role === "admin" || role === "process";
 
-    // Proxy ile çalışıyorsan root package.json içine şunu ekleyebilirsin:
-    // "proxy": "http://localhost:4000"
-    const API = useMemo(() => process.env.REACT_APP_API_URL || "http://localhost:4000", []);
+    // ✅ Backend yok: API yok, fetch yok.
+
     const [loading, setLoading] = useState(false);
     const [toast, setToast] = useState({ open: false, type: "info", text: "" });
 
@@ -99,16 +77,7 @@ export default function YeniTalep() {
     }, []);
 
     const sistemlerGorkem = useMemo(
-        () => [
-            "FTS",
-            "ETS",
-            "GELİR GİDER",
-            "SİPARİŞ OTOMASYON",
-            "TEDARİK ANALİZ",
-            "TALEP ÇÖZÜM",
-            "YENİ SİSTEM",
-            "DİĞER",
-        ],
+        () => ["FTS", "ETS", "GELİR GİDER", "SİPARİŞ OTOMASYON", "TEDARİK ANALİZ", "TALEP ÇÖZÜM", "YENİ SİSTEM", "DİĞER"],
         []
     );
 
@@ -138,24 +107,25 @@ export default function YeniTalep() {
     const [successOpen, setSuccessOpen] = useState(false);
     const [createdNo, setCreatedNo] = useState("");
 
-    // Birimler yükle
+    // ✅ Birimleri Supabase'den yükle (birim_unvanlar.birim benzersiz)
     useEffect(() => {
         let alive = true;
 
         (async () => {
             setLoadingBirimler(true);
             try {
-                const json = await fetchJson(`${API}/api/birimler`);
+                const { data, error } = await supabase.from("birim_unvanlar").select("birim");
+                if (error) throw error;
                 if (!alive) return;
 
-                const list = Array.isArray(json?.birimler) ? json.birimler : [];
-                if (!list.length) openToast("warning", "Birim listesi boş geldi.");
-                setBirimler(list);
+                const unique = Array.from(
+                    new Set((data || []).map((x) => (x?.birim || "").trim()).filter(Boolean))
+                ).sort((a, b) => a.localeCompare(b, "tr"));
+
+                if (!unique.length) openToast("warning", "Birim listesi boş geldi.");
+                setBirimler(unique);
             } catch (e) {
-                openToast(
-                    "error",
-                    `Birimler alınamadı. ${e?.status ? `(HTTP ${e.status}) ` : ""}${e?.message || ""}`.trim()
-                );
+                openToast("error", `Birimler alınamadı. ${e?.message || ""}`.trim());
                 if (alive) setBirimler([]);
             } finally {
                 if (alive) setLoadingBirimler(false);
@@ -165,9 +135,9 @@ export default function YeniTalep() {
         return () => {
             alive = false;
         };
-    }, [API, openToast]);
+    }, [openToast]);
 
-    // Birim seçilince kullanıcıları yükle
+    // ✅ Birim seçilince Supabase'den o birimdeki kullanıcıları çek (kullanicilar.birim = seçilen birim)
     useEffect(() => {
         let alive = true;
 
@@ -187,10 +157,16 @@ export default function YeniTalep() {
         (async () => {
             setLoadingUsers(true);
             try {
-                const json = await fetchJson(`${API}/api/kullanicilar?birim=${encodeURIComponent(form.birim)}`);
+                const { data, error } = await supabase
+                    .from("kullanicilar")
+                    .select("id, ad_soyad, birim")
+                    .eq("birim", form.birim)
+                    .order("ad_soyad", { ascending: true });
+
+                if (error) throw error;
                 if (!alive) return;
 
-                const list = Array.isArray(json?.users) ? json.users : [];
+                const list = Array.isArray(data) ? data : [];
                 setBirimUsers(list);
 
                 if (form.talep_edilen_id && !list.some((u) => String(u.id) === String(form.talep_edilen_id))) {
@@ -202,10 +178,7 @@ export default function YeniTalep() {
                     }));
                 }
             } catch (e) {
-                openToast(
-                    "error",
-                    `Kullanıcılar alınamadı. ${e?.status ? `(HTTP ${e.status}) ` : ""}${e?.message || ""}`.trim()
-                );
+                openToast("error", `Kullanıcılar alınamadı. ${e?.message || ""}`.trim());
                 if (!alive) return;
                 setBirimUsers([]);
             } finally {
@@ -216,7 +189,7 @@ export default function YeniTalep() {
         return () => {
             alive = false;
         };
-    }, [API, form.birim, form.talep_edilen_id, openToast]);
+    }, [form.birim, form.talep_edilen_id, openToast]);
 
     const showSistemSelect = form.talep_edilen === "GÖRKEM ÇADIRCI";
 
@@ -299,6 +272,7 @@ export default function YeniTalep() {
         return null;
     };
 
+    // ✅ Supabase’e talep + dosya upload
     const submit = async () => {
         if (loading) return;
 
@@ -307,26 +281,88 @@ export default function YeniTalep() {
 
         setLoading(true);
         try {
-            const fd = new FormData();
-            fd.append("baslik", form.baslik.trim());
-            fd.append("aciklama", form.aciklama.trim());
-            fd.append("oncelik", form.oncelik);
-            fd.append("durum", "BEKLEMEDE");
-            fd.append("istenilen_tarih", form.istenilen_tarih);
-            fd.append("talep_edilen", form.talep_edilen);
-            fd.append("talep_edilecek_sistem", showSistemSelect ? form.talep_edilecek_sistem : "");
-            fd.append("olusturan_id", String(user.id));
-            files.forEach((f) => fd.append("files", f));
+            const basePayload = {
+                baslik: form.baslik.trim(),
+                aciklama: form.aciklama.trim(),
+                oncelik: form.oncelik,
+                durum: "BEKLEMEDE",
+                istenilen_tarih: form.istenilen_tarih,
 
-            const res = await fetch(`${API}/api/talepler/create`, {
-                method: "POST",
-                body: fd,
-            });
+                talep_edilen: form.talep_edilen,
 
-            const json = await res.json().catch(() => ({}));
-            if (!res.ok) throw new Error(json?.message || "Talep oluşturulamadı.");
+                // DB'de yoksa hata veriyor → aşağıda yakalayıp tekrar deniyoruz
+                talep_edilen_id: String(form.talep_edilen_id),
 
-            setCreatedNo(json?.talep_no || "");
+                talep_edilecek_sistem: showSistemSelect ? form.talep_edilecek_sistem : null,
+                olusturan_id: String(user.id),
+                birim: form.birim,
+            };
+
+            const insertOnce = async (payload) => {
+                const { data, error } = await supabase
+                    .from("talepler")
+                    .insert(payload)
+                    .select("id, talep_no")
+                    .single();
+                if (error) throw error;
+                return data;
+            };
+
+            let created;
+            try {
+                created = await insertOnce(basePayload);
+            } catch (e) {
+                const msg = String(e?.message || "");
+                if (msg.includes("Could not find the 'talep_edilen_id' column")) {
+                    const { talep_edilen_id, ...withoutId } = basePayload;
+                    created = await insertOnce(withoutId);
+                } else {
+                    throw e;
+                }
+            }
+
+            const talepId = created?.id;
+            const talepNo = created?.talep_no;
+
+            // ✅ bucket: talepler-ekler
+            if (files.length && talepId) {
+                for (const f of files) {
+                    const safe = safeFileName(f.name);
+                    const unique = `${Date.now()}-${Math.random().toString(16).slice(2)}-${safe}`;
+                    const path = `talepler/${talepId}/${unique}`;
+
+                    const { error: upErr } = await supabase.storage
+                        .from("talepler-ekler")
+                        .upload(path, f, {
+                            upsert: false,
+                            contentType: f.type || "application/octet-stream",
+                        });
+
+                    if (upErr) throw upErr;
+
+                    const { data: pub } = supabase.storage.from("talepler-ekler").getPublicUrl(path);
+                    const publicUrl = pub?.publicUrl || "";
+
+                    // Opsiyonel: talep_dosyalar tablosu yoksa sistemi bozmasın
+                    const { error: fileInsErr } = await supabase.from("talep_dosyalar").insert({
+                        talep_id: talepId,
+                        path,
+                        url: publicUrl,
+                        name: f.name,
+                        size: f.size,
+                        type: f.type,
+                    });
+
+                    if (fileInsErr) {
+                        openToast(
+                            "warning",
+                            `Dosya yüklendi ama dosya kaydı DB'ye yazılamadı: ${fileInsErr.message || ""}`.trim()
+                        );
+                    }
+                }
+            }
+
+            setCreatedNo(talepNo || String(talepId || ""));
             setSuccessOpen(true);
 
             setFiles([]);
@@ -530,10 +566,7 @@ export default function YeniTalep() {
                                 placeholder="Sorunu detaylı anlat: ne oldu, ne zaman oldu, hata mesajı var mı, hangi cihaz/uygulama?"
                                 InputProps={{
                                     startAdornment: (
-                                        <InputAdornment
-                                            position="start"
-                                            sx={{ color: "#00f2fe", alignSelf: "flex-start", mt: 1.2 }}
-                                        >
+                                        <InputAdornment position="start" sx={{ color: "#00f2fe", alignSelf: "flex-start", mt: 1.2 }}>
                                             <AlignLeft size={16} />
                                         </InputAdornment>
                                     ),
@@ -572,10 +605,7 @@ export default function YeniTalep() {
                                             borderColor: "rgba(0,242,254,0.40)",
                                             color: "#e2e8f0",
                                             fontWeight: 900,
-                                            "&:hover": {
-                                                borderColor: "rgba(0,242,254,0.75)",
-                                                bgcolor: "rgba(255,255,255,0.03)",
-                                            },
+                                            "&:hover": { borderColor: "rgba(0,242,254,0.75)", bgcolor: "rgba(255,255,255,0.03)" },
                                         }}
                                         disabled={loading || files.length >= maxFiles}
                                     >
@@ -714,7 +744,7 @@ export default function YeniTalep() {
                             />
                         ) : (
                             <Typography sx={{ color: "rgba(255,255,255,0.55)", fontSize: 13 }}>
-                                Talep numarası backend’den döndürülmedi (API cevabına talep_no ekle).
+                                Talep numarası dönmedi (talepler tablosunda talep_no yoksa normal).
                             </Typography>
                         )}
 
@@ -723,12 +753,7 @@ export default function YeniTalep() {
                 </DialogContent>
             </Dialog>
 
-            <Snackbar
-                open={toast.open}
-                autoHideDuration={3200}
-                onClose={closeToast}
-                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-            >
+            <Snackbar open={toast.open} autoHideDuration={3200} onClose={closeToast} anchorOrigin={{ vertical: "bottom", horizontal: "center" }}>
                 <Alert onClose={closeToast} severity={toast.type} variant="filled" sx={{ width: "100%" }}>
                     {toast.text}
                 </Alert>
