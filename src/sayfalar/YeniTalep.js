@@ -52,11 +52,10 @@ function normRole(v) {
 function safeFileName(name) {
     return String(name || "dosya")
         .normalize("NFKD")
-        .replace(/[^\w.\-]+/g, "_")
+        .replace(/[^\w.-]+/g, "_")
         .replace(/_+/g, "_")
         .replace(/^_+|_+$/g, "");
 }
-
 export default function YeniTalep() {
     const navigate = useNavigate();
     const user = useMemo(() => getSession(), []);
