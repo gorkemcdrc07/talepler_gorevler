@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useRef, useState } from "react";
+﻿import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { supabase } from "../lib/supabase";
@@ -429,22 +429,24 @@ export default function GorevDetayPage() {
         load();
     }, [id]);
 
-    async function refreshYorumlar() {
+    const refreshYorumlar = useCallback(async () => {
         const updated = await getYorumlar(id);
         console.log("refreshYorumlar:", updated);
         hasLiveYorumDataRef.current = true;
         setYorumlar(updated || []);
-    }
-    async function refreshDosyalar() {
+    }, [id]);
+
+    const refreshDosyalar = useCallback(async () => {
         const updated = await getDosyalar(id);
         console.log("refreshDosyalar:", updated);
         hasLiveDosyaDataRef.current = true;
         setDosyalar(updated || []);
-    }
-    async function refreshDurumGecmisi() {
+    }, [id]);
+
+    const refreshDurumGecmisi = useCallback(async () => {
         const updated = await getGorevDurumGecmisi(id);
         setDurumGecmisi(updated || []);
-    }
+    }, [id]);
 
     useEffect(() => {
         if (!id) return;
@@ -524,13 +526,12 @@ export default function GorevDetayPage() {
                     }
                 }
             )
-            .subscribe((status) => {
-            });
+            .subscribe();
 
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [id]);
+    }, [id, refreshYorumlar, refreshDosyalar]);
     useEffect(() => {
         const channel = supabase
             .channel("gorev-durumlari-realtime")

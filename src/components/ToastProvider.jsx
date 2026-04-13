@@ -1,5 +1,6 @@
 ﻿import {
     createContext,
+    useCallback,
     useContext,
     useMemo,
     useRef,
@@ -18,7 +19,7 @@ export function ToastProvider({ children }) {
     const timersRef = useRef({});
     const [toasts, setToasts] = useState([]);
 
-    function removeToast(id) {
+    const removeToast = useCallback((id) => {
         const timer = timersRef.current[id];
 
         if (timer) {
@@ -27,9 +28,9 @@ export function ToastProvider({ children }) {
         }
 
         setToasts((prev) => prev.filter((item) => item.id !== id));
-    }
+    }, []);
 
-    function showToast(message, type = "info", link = null, options = {}) {
+    const showToast = useCallback((message, type = "info", link = null, options = {}) => {
         const id = Date.now() + Math.random();
         const duration = options.duration ?? 3500;
 
@@ -46,7 +47,7 @@ export function ToastProvider({ children }) {
         timersRef.current[id] = setTimeout(() => {
             removeToast(id);
         }, duration);
-    }
+    }, [removeToast]);
 
     function handleToastClick(toast) {
         if (toast.link) {
@@ -86,9 +87,8 @@ export function ToastProvider({ children }) {
             showToast,
             removeToast,
         }),
-        []
+        [showToast, removeToast]
     );
-
     return (
         <ToastContext.Provider value={value}>
             {children}

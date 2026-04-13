@@ -149,7 +149,7 @@ export default function GorevYeniPage() {
 
     useEffect(() => {
         setCalendarMonth(buildInitialCalendarMonth(form));
-    }, [form.baslangic_tarih, form.rutinTarihleri]);
+    }, [form]);
 
     function handleChange(field, value) {
         setForm((prev) => ({ ...prev, [field]: value }));
