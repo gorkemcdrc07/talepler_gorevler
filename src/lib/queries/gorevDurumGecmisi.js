@@ -1,4 +1,4 @@
-﻿import { supabase } from "../supabase";
+import { supabase } from "../supabase";
 import { getKullanicilar } from "./kullanicilar";
 
 export async function getGorevDurumGecmisi(gorevId) {

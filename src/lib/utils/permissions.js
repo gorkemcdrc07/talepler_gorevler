@@ -1,4 +1,4 @@
-﻿// permissions.js
+// permissions.js
 
 // (İstersen ileride tekrar kullanırsın diye bırakıyorum)
 export function normalizeRole(role = "") {
