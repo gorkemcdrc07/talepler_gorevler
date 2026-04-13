@@ -1,0 +1,1049 @@
+﻿/* ============================================================
+   TAKVIM — CSS
+   ============================================================ */
+
+:root {
+    --tkv-bg: var(--page-bg, #f8fafc);
+    --tkv-surface: var(--card-bg, #ffffff);
+    --tkv-surface-2: var(--panel-bg, #f1f5f9);
+    --tkv-border: rgba(148, 163, 184, 0.2);
+    --tkv-border-strong: rgba(148, 163, 184, 0.32);
+    --tkv-text: #0f172a;
+    --tkv-text-soft: #64748b;
+    --tkv-text-faint: #94a3b8;
+    --tkv-primary: #2563eb;
+    --tkv-primary-strong: #1d4ed8;
+    --tkv-primary-dim: rgba(37, 99, 235, 0.1);
+    --tkv-radius-xl: 20px;
+    --tkv-radius-lg: 16px;
+    --tkv-radius-md: 12px;
+    --tkv-shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.06), 0 4px 12px rgba(15, 23, 42, 0.04);
+    --tkv-shadow-md: 0 4px 16px rgba(15, 23, 42, 0.08), 0 12px 32px rgba(15, 23, 42, 0.06);
+    --tkv-shadow-modal: 0 24px 60px rgba(15, 23, 42, 0.18), 0 8px 24px rgba(15, 23, 42, 0.12);
+}
+
+[data-theme="dark"] {
+    --tkv-bg: #060d1a;
+    --tkv-surface: rgba(15, 23, 42, 0.9);
+    --tkv-surface-2: rgba(15, 23, 42, 0.6);
+    --tkv-border: rgba(148, 163, 184, 0.12);
+    --tkv-border-strong: rgba(148, 163, 184, 0.2);
+    --tkv-text: #e5eefb;
+    --tkv-text-soft: #94a3b8;
+    --tkv-text-faint: #64748b;
+    --tkv-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.16);
+    --tkv-shadow-md: 0 4px 16px rgba(0, 0, 0, 0.24), 0 12px 32px rgba(0, 0, 0, 0.2);
+    --tkv-shadow-modal: 0 24px 60px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* ============================================================
+   PAGE
+   ============================================================ */
+
+.takvim-page {
+    display: grid;
+    gap: 20px;
+    padding: 24px;
+    color: var(--tkv-text);
+}
+
+/* ============================================================
+   HERO
+   ============================================================ */
+
+.takvim-hero {
+    border: 1px solid var(--tkv-border);
+    border-radius: var(--tkv-radius-xl);
+    background: var(--tkv-surface);
+    box-shadow: var(--tkv-shadow-sm);
+    padding: 24px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.takvim-hero__content {
+    display: grid;
+    gap: 6px;
+    min-width: 240px;
+}
+
+.takvim-hero__eyebrow {
+    margin: 0;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--tkv-primary);
+}
+
+.takvim-hero__title {
+    margin: 0;
+    font-size: clamp(26px, 3.5vw, 38px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+}
+
+.takvim-hero__desc {
+    margin: 0;
+    color: var(--tkv-text-soft);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* STATS */
+
+.takvim-stats {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.takvim-stat {
+    border: 1px solid var(--tkv-border);
+    border-radius: var(--tkv-radius-lg);
+    background: var(--tkv-surface-2);
+    padding: 12px 18px;
+    min-width: 90px;
+    text-align: center;
+}
+
+.takvim-stat__value {
+    font-size: 26px;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1;
+}
+
+.takvim-stat__label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--tkv-text-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 4px;
+}
+
+.takvim-stat--open .takvim-stat__value {
+    color: #2563eb;
+}
+
+.takvim-stat--waiting .takvim-stat__value {
+    color: #d97706;
+}
+
+.takvim-stat--done .takvim-stat__value {
+    color: #16a34a;
+}
+
+.takvim-stat--late .takvim-stat__value {
+    color: #dc2626;
+}
+
+/* ============================================================
+   FILTERS
+   ============================================================ */
+
+.takvim-filters {
+    border: 1px solid var(--tkv-border);
+    border-radius: var(--tkv-radius-xl);
+    background: var(--tkv-surface);
+    box-shadow: var(--tkv-shadow-sm);
+    padding: 16px 20px;
+    display: grid;
+    gap: 14px;
+}
+
+.takvim-filters__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.takvim-filters__title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.takvim-filters__sub {
+    margin: 3px 0 0;
+    color: var(--tkv-text-soft);
+    font-size: 13px;
+}
+
+.takvim-filters__right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.takvim-filter-grid {
+    display: grid;
+    grid-template-columns: 2fr repeat(2, minmax(160px, 1fr)) 210px;
+    gap: 10px;
+}
+
+.takvim-input,
+.takvim-select {
+    width: 100%;
+    height: 42px;
+    border: 1px solid var(--tkv-border-strong);
+    background: var(--tkv-surface-2);
+    color: var(--tkv-text);
+    border-radius: var(--tkv-radius-md);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    font-size: 14px;
+    padding: 0 12px;
+}
+
+    .takvim-input:focus,
+    .takvim-select:focus {
+        border-color: rgba(37, 99, 235, 0.5);
+        box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+
+.takvim-check {
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 12px;
+    border: 1px solid var(--tkv-border-strong);
+    border-radius: var(--tkv-radius-md);
+    background: var(--tkv-surface-2);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--tkv-text);
+    cursor: pointer;
+}
+
+    .takvim-check input {
+        accent-color: var(--tkv-primary);
+        width: 15px;
+        height: 15px;
+    }
+
+/* VIEW TOGGLE */
+
+.takvim-view-toggle {
+    display: flex;
+    border: 1px solid var(--tkv-border-strong);
+    border-radius: var(--tkv-radius-md);
+    overflow: hidden;
+    background: var(--tkv-surface-2);
+}
+
+.takvim-view-btn {
+    height: 38px;
+    padding: 0 16px;
+    border: none;
+    background: transparent;
+    color: var(--tkv-text-soft);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+    .takvim-view-btn.active {
+        background: var(--tkv-primary);
+        color: #fff;
+    }
+
+    .takvim-view-btn:not(.active):hover {
+        background: var(--tkv-border);
+        color: var(--tkv-text);
+    }
+
+/* BUTTONS */
+
+.takvim-btn {
+    appearance: none;
+    border: 1px solid transparent;
+    border-radius: var(--tkv-radius-md);
+    height: 40px;
+    padding: 0 14px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.takvim-btn--secondary {
+    background: var(--tkv-surface-2);
+    color: var(--tkv-text);
+    border-color: var(--tkv-border-strong);
+}
+
+    .takvim-btn--secondary:hover {
+        background: var(--tkv-border);
+    }
+
+/* ============================================================
+   LAYOUT
+   ============================================================ */
+
+.takvim-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) 340px;
+    gap: 20px;
+    align-items: start;
+}
+
+.takvim-main,
+.takvim-sidebar {
+    min-width: 0;
+}
+
+.takvim-sidebar {
+    display: grid;
+    gap: 16px;
+}
+
+.takvim-card {
+    border: 1px solid var(--tkv-border);
+    border-radius: var(--tkv-radius-xl);
+    background: var(--tkv-surface);
+    box-shadow: var(--tkv-shadow-sm);
+    padding: 18px;
+}
+
+.takvim-loading,
+.takvim-empty {
+    padding: 18px;
+    border-radius: var(--tkv-radius-md);
+    background: rgba(148, 163, 184, 0.06);
+    color: var(--tkv-text-soft);
+    font-size: 14px;
+}
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+
+.takvim-sidehead {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 14px;
+}
+
+    .takvim-sidehead h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+    }
+
+    .takvim-sidehead p {
+        margin: 5px 0 0;
+        color: var(--tkv-text-soft);
+        font-size: 13px;
+    }
+
+.takvim-tasklist {
+    display: grid;
+    gap: 10px;
+}
+
+.takvim-taskitem {
+    width: 100%;
+    text-align: left;
+    border: 1px solid var(--tkv-border);
+    border-radius: var(--tkv-radius-lg);
+    background: rgba(148, 163, 184, 0.04);
+    padding: 12px;
+    display: grid;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--tkv-text);
+}
+
+    .takvim-taskitem:hover {
+        transform: translateY(-2px);
+        border-color: rgba(37, 99, 235, 0.3);
+        box-shadow: var(--tkv-shadow-sm);
+    }
+
+    .takvim-taskitem.is-late {
+        border-color: rgba(220, 38, 38, 0.22);
+    }
+
+.takvim-taskitem__top {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    align-items: flex-start;
+}
+
+    .takvim-taskitem__top h4 {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.4;
+    }
+
+.takvim-taskitem__date {
+    white-space: nowrap;
+    color: var(--tkv-text-soft);
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.takvim-taskitem__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+/* ============================================================
+   BADGES
+   ============================================================ */
+
+.tkv-badge,
+.takvim-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 0 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.tkv-badge--open {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.tkv-badge--waiting {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.tkv-badge--done {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.tkv-badge--cancel {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+.tkv-badge--critical {
+    background: #ede9fe;
+    color: #5b21b6;
+}
+
+.tkv-badge--high {
+    background: #ffedd5;
+    color: #c2410c;
+}
+
+.tkv-badge--late {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.tkv-badge--soft {
+    background: var(--tkv-surface-2);
+    color: var(--tkv-text-soft);
+    border: 1px solid var(--tkv-border);
+}
+
+/* ============================================================
+   LEGEND
+   ============================================================ */
+
+.takvim-legend__title {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0 0 12px;
+}
+
+.takvim-legend {
+    display: grid;
+    gap: 8px;
+}
+
+.takvim-legend__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--tkv-text-soft);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.takvim-legend__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.takvim-legend__dot--open {
+    background: #2563eb;
+}
+
+.takvim-legend__dot--waiting {
+    background: #d97706;
+}
+
+.takvim-legend__dot--done {
+    background: #16a34a;
+}
+
+.takvim-legend__dot--critical {
+    background: #7c3aed;
+}
+
+.takvim-legend__dot--high {
+    background: #ea580c;
+}
+
+.takvim-legend__dot--late {
+    background: #dc2626;
+}
+
+.takvim-legend__dot--cancel {
+    background: #94a3b8;
+}
+
+/* ============================================================
+   LIST VIEW
+   ============================================================ */
+
+.takvim-listview {
+    display: grid;
+    gap: 8px;
+}
+
+.takvim-listitem {
+    width: 100%;
+    text-align: left;
+    border: 1px solid var(--tkv-border);
+    border-radius: var(--tkv-radius-lg);
+    background: var(--tkv-surface-2);
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    color: var(--tkv-text);
+}
+
+    .takvim-listitem:hover {
+        border-color: rgba(37, 99, 235, 0.3);
+        background: var(--tkv-surface);
+        transform: translateY(-1px);
+        box-shadow: var(--tkv-shadow-sm);
+    }
+
+    .takvim-listitem.is-late {
+        border-color: rgba(220, 38, 38, 0.2);
+    }
+
+.takvim-listitem__bar {
+    width: 4px;
+    height: 38px;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.takvim-listitem__info {
+    flex: 1;
+    min-width: 0;
+}
+
+    .takvim-listitem__info h4 {
+        margin: 0 0 6px;
+        font-size: 14px;
+        font-weight: 700;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+.takvim-listitem__meta {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.takvim-listitem__birim {
+    font-size: 12px;
+    color: var(--tkv-text-soft);
+}
+
+.takvim-listitem__date {
+    flex-shrink: 0;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--tkv-text-soft);
+}
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+
+.tkv-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: tkv-fade-in 0.15s ease;
+}
+
+@keyframes tkv-fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.tkv-modal {
+    background: var(--tkv-surface);
+    border: 1px solid var(--tkv-border);
+    border-radius: var(--tkv-radius-xl);
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: var(--tkv-shadow-modal);
+    animation: tkv-slide-up 0.18s ease;
+}
+
+@keyframes tkv-slide-up {
+    from {
+        transform: translateY(16px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.tkv-modal__header {
+    padding: 20px 20px 0;
+}
+
+.tkv-modal__title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.tkv-modal__title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.35;
+}
+
+.tkv-modal__close {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    border: 1px solid var(--tkv-border-strong);
+    border-radius: var(--tkv-radius-md);
+    background: var(--tkv-surface-2);
+    color: var(--tkv-text-soft);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+}
+
+    .tkv-modal__close:hover {
+        border-color: rgba(37, 99, 235, 0.4);
+        color: var(--tkv-primary);
+    }
+
+.tkv-modal__badges {
+    padding: 12px 20px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.tkv-modal__body {
+    padding: 0 20px 8px;
+    display: grid;
+    gap: 10px;
+}
+
+.tkv-modal__info-grid {
+    display: grid;
+    gap: 6px;
+}
+
+.tkv-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    background: var(--tkv-surface-2);
+    border: 1px solid var(--tkv-border);
+    border-radius: var(--tkv-radius-md);
+}
+
+.tkv-info-row__label {
+    font-size: 12px;
+    color: var(--tkv-text-soft);
+    font-weight: 600;
+}
+
+.tkv-info-row__value {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--tkv-text);
+}
+
+.tkv-modal__desc {
+    background: var(--tkv-surface-2);
+    border: 1px solid var(--tkv-border);
+    border-radius: var(--tkv-radius-md);
+    padding: 12px;
+}
+
+.tkv-modal__desc-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--tkv-text-soft);
+    margin: 0 0 6px;
+}
+
+.tkv-modal__desc-text {
+    font-size: 13px;
+    color: var(--tkv-text-soft);
+    line-height: 1.65;
+    margin: 0;
+}
+
+/* PROGRESS */
+
+.tkv-modal__progress {
+    background: var(--tkv-surface-2);
+    border: 1px solid var(--tkv-border);
+    border-radius: var(--tkv-radius-md);
+    padding: 12px;
+}
+
+.tkv-progress__header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--tkv-text-soft);
+    margin-bottom: 8px;
+}
+
+.tkv-progress__bar {
+    height: 6px;
+    background: var(--tkv-border);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.tkv-progress__fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.5s ease;
+}
+
+/* MODAL ACTIONS */
+
+.tkv-modal__actions {
+    padding: 12px 20px 20px;
+    display: flex;
+    gap: 8px;
+}
+
+.tkv-modal-btn {
+    flex: 1;
+    height: 40px;
+    border: 1px solid var(--tkv-border-strong);
+    border-radius: var(--tkv-radius-md);
+    background: var(--tkv-surface-2);
+    color: var(--tkv-text);
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+    .tkv-modal-btn:hover {
+        background: var(--tkv-border);
+    }
+
+.tkv-modal-btn--primary {
+    background: var(--tkv-primary);
+    color: #fff;
+    border-color: var(--tkv-primary);
+}
+
+    .tkv-modal-btn--primary:hover {
+        background: var(--tkv-primary-strong);
+        border-color: var(--tkv-primary-strong);
+    }
+
+/* ============================================================
+   REACT BIG CALENDAR OVERRIDES
+   ============================================================ */
+
+.rbc-calendar {
+    color: var(--tkv-text);
+    background: transparent;
+}
+
+.rbc-toolbar {
+    margin-bottom: 16px;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+    .rbc-toolbar button {
+        border: 1px solid var(--tkv-border-strong) !important;
+        background: var(--tkv-surface-2) !important;
+        color: var(--tkv-text) !important;
+        border-radius: var(--tkv-radius-md) !important;
+        padding: 9px 13px !important;
+        font-weight: 700 !important;
+        font-size: 13px !important;
+        transition: all 0.15s;
+    }
+
+        .rbc-toolbar button:hover {
+            border-color: rgba(37, 99, 235, 0.3) !important;
+        }
+
+        .rbc-toolbar button.rbc-active {
+            background: var(--tkv-primary) !important;
+            color: #fff !important;
+            border-color: transparent !important;
+        }
+
+.rbc-toolbar-label {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+}
+
+.rbc-month-view,
+.rbc-time-view,
+.rbc-agenda-view {
+    border: 1px solid var(--tkv-border) !important;
+    border-radius: var(--tkv-radius-lg);
+    overflow: hidden;
+    background: transparent;
+}
+
+.rbc-header {
+    padding: 12px 8px !important;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--tkv-text-soft);
+    border-bottom: 1px solid var(--tkv-border) !important;
+    background: rgba(148, 163, 184, 0.06);
+}
+
+    .rbc-day-bg + .rbc-day-bg,
+    .rbc-month-row + .rbc-month-row,
+    .rbc-header + .rbc-header,
+    .rbc-time-content > * + * > * {
+        border-left-color: var(--tkv-border) !important;
+    }
+
+.rbc-month-row,
+.rbc-time-content,
+.rbc-timeslot-group,
+.rbc-time-header-content,
+.rbc-time-view,
+.rbc-agenda-table tbody > tr > td,
+.rbc-agenda-table tbody > tr > th {
+    border-color: var(--tkv-border) !important;
+}
+
+.rbc-off-range-bg {
+    background: rgba(148, 163, 184, 0.04) !important;
+}
+
+.rbc-today {
+    background: var(--tkv-primary-dim) !important;
+}
+
+.rbc-date-cell {
+    padding: 6px 8px 0 0 !important;
+    text-align: right;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--tkv-text-soft);
+}
+
+.rbc-event {
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+/* EVENT PILLS */
+
+.tkv-event .tkv-event__inner {
+    border-radius: 8px;
+    padding: 6px 8px;
+    color: #fff;
+}
+
+.tkv-event__title {
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.tkv-event__meta {
+    margin-top: 3px;
+    display: flex;
+    gap: 5px;
+    font-size: 10px;
+    opacity: 0.88;
+}
+
+.tkv-event--open .tkv-event__inner {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.tkv-event--waiting .tkv-event__inner {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+}
+
+.tkv-event--done .tkv-event__inner {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+
+.tkv-event--cancel .tkv-event__inner {
+    background: linear-gradient(135deg, #94a3b8, #64748b);
+}
+
+.tkv-event--critical .tkv-event__inner {
+    background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+}
+
+.tkv-event--high .tkv-event__inner {
+    background: linear-gradient(135deg, #fb923c, #ea580c);
+}
+
+.tkv-event--late .tkv-event__inner {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1100px) {
+    .takvim-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .takvim-stats {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .takvim-stat {
+        flex: 1;
+    }
+
+    .takvim-filter-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 720px) {
+    .takvim-page {
+        padding: 14px;
+    }
+
+    .takvim-hero,
+    .takvim-card,
+    .takvim-filters {
+        padding: 14px;
+    }
+
+    .takvim-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .takvim-filter-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .rbc-toolbar {
+        align-items: stretch !important;
+    }
+
+    .rbc-toolbar-label {
+        width: 100%;
+        text-align: left;
+    }
+
+    .takvim-taskitem__top {
+        flex-direction: column;
+    }
+
+    .tkv-modal {
+        max-height: 95vh;
+    }
+
+    .tkv-modal__actions {
+        flex-direction: column;
+    }
+
+    .takvim-filters__right {
+        width: 100%;
+    }
+
+    .takvim-view-toggle {
+        flex: 1;
+    }
+
+    .takvim-view-btn {
+        flex: 1;
+    }
+}

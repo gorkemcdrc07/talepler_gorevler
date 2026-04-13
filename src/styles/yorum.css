@@ -1,0 +1,95 @@
+﻿.yorum-section {
+    display: grid;
+    gap: 16px;
+}
+
+.yorum-editor {
+    border: 1px solid var(--g-border, rgba(148, 163, 184, 0.22));
+    border-radius: 22px;
+    background: var(--g-surface, rgba(255,255,255,0.92));
+    padding: 16px;
+    display: grid;
+    gap: 12px;
+}
+
+.yorum-editor__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.yorum-list {
+    display: grid;
+    gap: 12px;
+}
+
+.yorum-item {
+    border: 1px solid var(--g-border, rgba(148, 163, 184, 0.22));
+    border-radius: 20px;
+    background: var(--g-surface, rgba(255,255,255,0.92));
+    padding: 16px;
+    display: grid;
+    gap: 12px;
+}
+
+.yorum-item__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.yorum-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
+.yorum-user__avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 900;
+    flex-shrink: 0;
+}
+
+.yorum-user__meta {
+    min-width: 0;
+}
+
+.yorum-user__name {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--g-text, #0f172a);
+}
+
+.yorum-user__date {
+    margin: 3px 0 0;
+    font-size: 12px;
+    color: var(--g-text-soft, #64748b);
+}
+
+.yorum-item__text {
+    margin: 0;
+    color: var(--g-text, #0f172a);
+    line-height: 1.75;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.yorum-empty {
+    border: 1px dashed var(--g-border, rgba(148, 163, 184, 0.22));
+    border-radius: 18px;
+    padding: 24px;
+    text-align: center;
+    color: var(--g-text-soft, #64748b);
+}

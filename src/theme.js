@@ -1,18 +1,17 @@
 ﻿export const ui = {
-    bg: "#050b16",
-    panel: "#0b1220",
-    card: "#0f172a",
+    bg: "#f8fafc",
+    panel: "#ffffff",
+    card: "#ffffff",
 
-    border: "rgba(255,255,255,0.06)",
+    border: "#e2e8f0",
 
-    text: "#e5e7eb",
-    muted: "rgba(255,255,255,0.55)",
+    text: "#0f172a",
+    muted: "#64748b",
 
-    primary: "#22d3ee",
-    primarySoft: "rgba(34,211,238,0.12)",
+    primary: "#2563eb",
+    primarySoft: "rgba(37,99,235,0.08)",
 
-    success: "#34d399",
-    warning: "#facc15",
-    danger: "#fb7185"
+    success: "#22c55e",
+    warning: "#f59e0b",
+    danger: "#ef4444"
 };
-

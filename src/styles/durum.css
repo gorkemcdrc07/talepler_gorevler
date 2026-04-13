@@ -1,0 +1,98 @@
+﻿.durum-panel {
+    display: grid;
+    gap: 16px;
+}
+
+.durum-kartlari {
+    display: grid;
+    gap: 12px;
+}
+
+.durum-karti {
+    border: 1px solid var(--g-border, rgba(148, 163, 184, 0.22));
+    border-radius: 18px;
+    background: var(--g-surface, rgba(255,255,255,0.92));
+    padding: 14px;
+    display: grid;
+    gap: 10px;
+}
+
+.durum-karti__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.durum-karti__title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--g-text, #0f172a);
+}
+
+.durum-karti__meta {
+    margin: 0;
+    font-size: 12px;
+    color: var(--g-text-soft, #64748b);
+    line-height: 1.6;
+}
+
+.durum-gecmis {
+    display: grid;
+    gap: 12px;
+}
+
+.durum-gecmis__item {
+    position: relative;
+    padding-left: 22px;
+    display: grid;
+    gap: 6px;
+}
+
+    .durum-gecmis__item::before {
+        content: "";
+        position: absolute;
+        left: 5px;
+        top: 5px;
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: #2563eb;
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    }
+
+    .durum-gecmis__item::after {
+        content: "";
+        position: absolute;
+        left: 9px;
+        top: 22px;
+        bottom: -10px;
+        width: 2px;
+        background: rgba(148, 163, 184, 0.22);
+    }
+
+    .durum-gecmis__item:last-child::after {
+        display: none;
+    }
+
+.durum-gecmis__title {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 800;
+    color: var(--g-text, #0f172a);
+}
+
+.durum-gecmis__meta {
+    margin: 0;
+    font-size: 12px;
+    color: var(--g-text-soft, #64748b);
+}
+
+.durum-empty {
+    border: 1px dashed var(--g-border, rgba(148, 163, 184, 0.22));
+    border-radius: 18px;
+    padding: 20px;
+    color: var(--g-text-soft, #64748b);
+}

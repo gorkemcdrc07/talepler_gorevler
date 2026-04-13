@@ -1,0 +1,141 @@
+﻿.bildirim-panel {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 360px;
+    max-width: calc(100vw - 24px);
+    max-height: 420px;
+    overflow-y: auto;
+    border-radius: 14px;
+    padding: 10px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.14);
+    z-index: 1000;
+}
+
+.bildirim-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 6px 4px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    margin-bottom: 8px;
+}
+
+.bildirim-readall-btn {
+    border: none;
+    background: transparent;
+    color: #2563eb;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 13px;
+    padding: 4px 6px;
+    border-radius: 8px;
+    transition: background 0.18s ease, color 0.18s ease;
+}
+
+    .bildirim-readall-btn:hover {
+        background: rgba(37, 99, 235, 0.08);
+    }
+
+.bildirim-empty {
+    padding: 16px 10px;
+    color: #6b7280;
+    text-align: center;
+    font-size: 14px;
+}
+
+.bildirim-item {
+    padding: 12px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    background: #fff;
+}
+
+    .bildirim-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .bildirim-item.okunmadi .bildirim-title {
+        font-weight: 800;
+    }
+
+.bildirim-title-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+
+.bildirim-icon {
+    font-size: 18px;
+    line-height: 1;
+    width: 20px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.bildirim-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.35;
+}
+
+.bildirim-text {
+    color: #4b5563;
+    font-size: 13px;
+    line-height: 1.5;
+    padding-left: 30px;
+}
+
+@media (max-width: 768px) {
+    .topbar {
+        align-items: stretch;
+    }
+
+    .topbar-left,
+    .topbar-right {
+        width: 100%;
+    }
+
+    .mobile-nav-toggle {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 12px;
+        background: #111827;
+        color: #fff;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .top-nav {
+        display: none;
+        width: 100%;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+        .top-nav.is-open {
+            display: flex;
+        }
+
+    .topbar-right {
+        justify-content: space-between;
+    }
+
+    .topbar-userbox {
+        min-width: 100%;
+    }
+
+    .bildirim-panel {
+        right: auto;
+        left: 0;
+        width: min(100vw - 24px, 360px);
+    }
+}
